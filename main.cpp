@@ -19,7 +19,8 @@ int main() {
 	}
 	SwapSorter *sorter = new SwapSorter(user_input);
 	output = sorter->sort();
-	
+	sorter->print();
+	delete sorter;
 	std::cout << std::endl;
 	return 0;
 }
