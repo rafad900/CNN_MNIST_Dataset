@@ -13,5 +13,6 @@ class SwapSorter {
 	private:
 		std::vector<int> numbers;
 		std::vector< std::vector<int> > swaps;
+		std::vector<bool> visited;
 };
 #endif

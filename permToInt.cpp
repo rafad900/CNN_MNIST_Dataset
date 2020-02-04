@@ -66,7 +66,7 @@ vector<int> intToPerm(int n, int m) {
   return temp1;
 }
 
-int main() {
+/*int main() {
    vector<int> perm;
     int num;
     cout << "Testing permToInt function " << endl;
@@ -90,7 +90,7 @@ int main() {
      cout << temp1[j] << "," ;
   cout << temp1[siz-1] << " > " << endl;
   return 0;
-}
+}*/
 
 
 

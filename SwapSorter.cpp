@@ -1,8 +1,9 @@
 #include "SwapSorter.hpp"
+#include "permToInt.cpp"
 
 SwapSorter::SwapSorter(std::vector<int> user_input): numbers(user_input) {} //{ numbers = user_input; } Im using a initilizer list just if you wondering
 
-void SwapSorter::print() {
+void SwapSorter::print() {							// Just a random print function, mainly for debugging
 	std::cout << "This is the original sequence: [";
 	for (int i = 0; i < numbers.size(); i++) {
 		std::cout << numbers[i] << " ";
@@ -13,29 +14,27 @@ void SwapSorter::print() {
 		for (int j = 0; j < swaps[i].size(); j++) {
 			std::cout << swaps[i][j] << " ";
 		}
-		std::cout << "]";
-		std::cout << std::endl;
+		std::cout << "]\n";
 	}
 }
-
+	
 std::vector<int> SwapSorter::swap_section(int l, int r) {
 	std::vector<int> swapped_vector (numbers.size(), 0);
-	for (int i = 0; i <  l; i++) {
+	for (int i = 0; i <  l; i++) {					// To fill anything before the section to be swapped
 		swapped_vector[i] = numbers[i];
 	}
 	for (int i = l; i <= r; i++) {
-		swapped_vector[l+(r-i)] = numbers[i];
+		swapped_vector[l+(r-i)] = numbers[i];		// This to swap the section
 	}
-	for (int i = r+1; i < numbers.size(); i++) {
+	for (int i = r+1; i < numbers.size(); i++) {	// This to fill anything after the section
 		swapped_vector[i] = numbers[i];
 	}
 	return swapped_vector;
 }
 
 std::vector<int> SwapSorter::sort() {
-	
-	for (int a = 0; a < numbers.size(); a++) {
-		for (int b = numbers.size()-1; b >= 0; b--) {
+	for (int a = 0; a < numbers.size(); a++) {			// Should perform swaps from left to right
+		for (int b = numbers.size()-1; b >= 0; b--) {	// Should perform swaps from right to left
 			swaps.push_back(swap_section(a, b));
 		}
 	}
