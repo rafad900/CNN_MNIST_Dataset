@@ -18,8 +18,7 @@ int main() {
 		std::cout << "Another number? ";
 	}
 	SwapSorter *sorter = new SwapSorter(user_input);
-	output = sorter->sort();
-	sorter->print();
+	sorter->sort();
 	delete sorter;
 	std::cout << std::endl;
 	return 0;
