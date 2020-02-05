@@ -5,12 +5,13 @@
 
 class SwapSorter {
 	public:
-		std::vector<int> sort();
+		void sort();
 		std::vector<int> swap_section(std::vector<int> perm, int l, int r);
 		SwapSorter(std::vector<int> user_input);
-		void print();
+		void print(std::vector<int> perms);
 		
 	private:
+		bool IDS(std::vector<int> perm);
 		bool is_goal(std::vector<int> perm);
 		std::vector< std::vector<int> > get_neighbors( std::vector<int> parent);
 		bool DFS(std::vector<int> perm, int depth);
@@ -18,5 +19,7 @@ class SwapSorter {
 		std::vector<int> sorted_numbers;
 		std::vector< std::vector<int> > swaps;
 		std::vector<bool> visited;
+		std::vector<int> parent;
+		std::vector<int> path;
 };
 #endif
