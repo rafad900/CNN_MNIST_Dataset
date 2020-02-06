@@ -1,6 +1,8 @@
 #include <algorithm>
 #include "SwapSorter.hpp"
 #include "permToInt.cpp"
+#include <queue>
+
 
 SwapSorter::SwapSorter(std::vector<int> user_input): numbers(user_input) {
 	sorted_numbers = numbers; 
@@ -30,7 +32,7 @@ void SwapSorter::print(std::vector<int> perms) {
 		std::cout << "]\n";
 	}
 }
-	
+
 std::vector<int> SwapSorter::swap_section(std::vector<int> parent_perm, int l, int r) {
 	std::vector<int> swapped_vector (numbers.size(), 0);
 	for (int i = 0; i <  l; i++) {					// To fill anything before the section to be swapped
@@ -45,21 +47,38 @@ std::vector<int> SwapSorter::swap_section(std::vector<int> parent_perm, int l, i
 	return swapped_vector;
 }
 
-void SwapSorter::sort() {								// THIS IS THE FUNCTION THAT RUNS BEGINS THE SORTATION
-	if (IDS(numbers)) {
-		int next_index = permToInt(sorted_numbers);
-		while (parent[next_index] != -1) {
-			path.push_back(next_index);
-			next_index = parent[next_index];
-		}
-	}
-	print(path);
+void SwapSorter::IDSsort() {								// THIS IS THE FUNCTION THAT RUNS BEGINS THE SORTATION
+
+    if (IDS(numbers)){
+        cout<<"BFS:"<<endl;
+        int next_index = permToInt(sorted_numbers);
+        while (parent[next_index] != -1) {
+            path.push_back(next_index);
+            next_index = parent[next_index];
+        }
+        print(path);
+    }
+
+
+
+}
+
+void SwapSorter::BFSsort(){
+    if (BFS(numbers)) {
+        cout<<"IDS:"<<endl;
+        int next_index = permToInt(sorted_numbers);
+        while (parent[next_index] != -1) {
+            path.push_back(next_index);
+            next_index = parent[next_index];
+        }
+        print(path);
+    }
 }
 
 std::vector< std::vector<int> > SwapSorter::get_neighbors( std::vector<int> parent) {
 	std::vector< std::vector<int> > temp_neighbors;
 	for (int a = 0; a < parent.size(); a++) {			// Should perform swaps from left to right
-		for (int b = parent.size()-1; b > a; b--) {	// Should perform swaps from right to left
+		for (int b = a+1; b < parent.size(); b++) {	// Should perform swaps from right to left
 			temp_neighbors.push_back(swap_section(parent, a, b));
 		}
 	}
@@ -68,15 +87,15 @@ std::vector< std::vector<int> > SwapSorter::get_neighbors( std::vector<int> pare
 
 bool SwapSorter::is_goal(std::vector<int> perm) { // THis quecks for the goal in IDS 
 	/*std::cout << "This is the permutation: [";											/// This section prints out the swaps that are being compared to the sorted one
-	for (int i = 0; i < perm.size(); i++) {
-		std::cout << perm[i] << " ";
-	} 
-	std::cout << "] and this is the sorted [";
-	for (int i = 0; i < perm.size(); i++) {
-		std::cout << sorted_numbers[i] << " ";
-	} 
-	std::cout << "] and this is what they return: " << (perm == sorted_numbers) << "\n";
-	*/
+	  for (int i = 0; i < perm.size(); i++) {
+	  std::cout << perm[i] << " ";
+	  } 
+	  std::cout << "] and this is the sorted [";
+	  for (int i = 0; i < perm.size(); i++) {
+	  std::cout << sorted_numbers[i] << " ";
+	  } 
+	  std::cout << "] and this is what they return: " << (perm == sorted_numbers) << "\n";
+	  */
 	return perm == sorted_numbers;
 }
 
@@ -106,10 +125,37 @@ bool SwapSorter::IDS(std::vector<int> perm) {
 		return true;
 	}
 	int depth = 1;
-	while (!DFS(perm, depth)) {		
-		std::fill(visited.begin(), visited.end(), 0);	// Reset both the parent and the visited vectors for the next iteration of DFS
-		std::fill(parent.begin(), parent.end(), -1);
+    while (!DFS(perm, depth)) {	
 		depth++;
 	}
 	return true;
+}
+
+
+bool  SwapSorter::BFS (std::vector<int> perm){
+	if (is_goal(perm)) return true;
+	queue<vector<int>> Q;
+	std::fill(visited.begin(), visited.end(), 0);
+	std::fill(parent.begin(), parent.end(), -1);
+	Q.push(perm);
+	int index = permToInt(perm);
+	visited[index] = true;
+    std::vector<int> current;
+	while (!Q.empty()){
+		current = Q.front();
+		Q.pop();
+		int parentIndex = permToInt(current);
+		if (is_goal(current)) return true;
+		std::vector< std::vector<int> > neighbors = get_neighbors(current);
+		for (std::vector<int> n: neighbors) {
+			index = permToInt(n);
+			if(!visited[index]){
+				visited[index] =true;
+				parent[index]= parentIndex;
+				Q.push(n);
+			}
+		}
+	}
+	return false;
+
 }
