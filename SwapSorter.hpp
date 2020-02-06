@@ -15,7 +15,7 @@ public:
 	void print(std::vector<int> perms);
 
 private:
-	bool BFS(std::vector<int> perm);
+	bool BFS(std::vector<int> perm, int& max_size);
 	bool IDS(std::vector<int> perm);
 	bool is_goal(std::vector<int> perm);
 	std::vector< std::vector<int> > get_neighbors(std::vector<int> parent);

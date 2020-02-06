@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 #include "time.h"
-
+#include <bits/stdc++.h>
 int main() {
 	std::vector<int> user_input;
 	std::string input;
@@ -36,6 +36,5 @@ int main() {
 
 	std::cout << std::endl;
 	return 0;
-
 }
 
