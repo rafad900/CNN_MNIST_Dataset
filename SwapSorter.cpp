@@ -2,6 +2,7 @@
 #include "SwapSorter.hpp"
 #include "permToInt.cpp"
 #include <queue>
+#include <stack>
 
 
 SwapSorter::SwapSorter(std::vector<int> user_input): numbers(user_input) {
@@ -18,14 +19,14 @@ SwapSorter::SwapSorter(std::vector<int> user_input): numbers(user_input) {
 }
 
 void SwapSorter::print(std::vector<int> perms) {							
-	std::cout << "This is the original sequence: [";
+	std::cout << "[ ";
 	for (int i = 0; i < numbers.size(); i++) {
 		std::cout << numbers[i] << " ";
 	} 
-	std::cout << "]\n\nThis is the path to the sorted sequence\n";
+	std::cout << "]\n";
 	for (int i = perms.size()-1; i >= 0; i--) {
 		std::vector<int> temp = intToPerm(perms[i], numbers.size());
-		std::cout << "[";
+		std::cout << "[ ";
 		for (int j = 0; j < temp.size(); j++) {
 			std::cout << temp[j] << " ";
 		}
@@ -48,31 +49,36 @@ std::vector<int> SwapSorter::swap_section(std::vector<int> parent_perm, int l, i
 }
 
 void SwapSorter::IDSsort() {								// THIS IS THE FUNCTION THAT RUNS BEGINS THE SORTATION
-
-    if (IDS(numbers)){
-        cout<<"BFS:"<<endl;
-        int next_index = permToInt(sorted_numbers);
-        while (parent[next_index] != -1) {
-            path.push_back(next_index);
-            next_index = parent[next_index];
-        }
-        print(path);
-    }
-
-
+	int count ,numOfmoves=0;
+	if (IDS(numbers,count)){
+		int next_index = permToInt(sorted_numbers);
+		while (parent[next_index] != -1) {
+			numOfmoves++;
+			path.push_back(next_index);
+			next_index = parent[next_index];
+		}
+		std::cout<<"Number of moves to sort : "<< numOfmoves<<std::endl;
+		print(path);
+		std::cout<<"Total states visited    : "<< count<<std::endl;
+	}
 
 }
 
 void SwapSorter::BFSsort(){
-    if (BFS(numbers)) {
-        cout<<"IDS:"<<endl;
-        int next_index = permToInt(sorted_numbers);
-        while (parent[next_index] != -1) {
-            path.push_back(next_index);
-            next_index = parent[next_index];
-        }
-        print(path);
-    }
+	int max_size , numOfmoves= 0;
+	int count = 0;
+	if (BFS(numbers, max_size, count)) {
+		int next_index = permToInt(sorted_numbers);
+		while (parent[next_index] != -1) {
+			numOfmoves++;
+			path.push_back(next_index);
+			next_index = parent[next_index];
+		}
+		std::cout<<"Number of moves to sort : "<< numOfmoves<<std::endl;
+		print(path);
+		std::cout<<"Total states visited    : "<< count<<std::endl;
+		std::cout<<"Max queue size          : "<<max_size<<std::endl;
+	}
 }
 
 std::vector< std::vector<int> > SwapSorter::get_neighbors( std::vector<int> parent) {
@@ -86,53 +92,43 @@ std::vector< std::vector<int> > SwapSorter::get_neighbors( std::vector<int> pare
 }
 
 bool SwapSorter::is_goal(std::vector<int> perm) { // THis quecks for the goal in IDS 
-	/*std::cout << "This is the permutation: [";											/// This section prints out the swaps that are being compared to the sorted one
-	  for (int i = 0; i < perm.size(); i++) {
-	  std::cout << perm[i] << " ";
-	  } 
-	  std::cout << "] and this is the sorted [";
-	  for (int i = 0; i < perm.size(); i++) {
-	  std::cout << sorted_numbers[i] << " ";
-	  } 
-	  std::cout << "] and this is what they return: " << (perm == sorted_numbers) << "\n";
-	  */
 	return perm == sorted_numbers;
 }
 
-bool SwapSorter::DFS(std::vector<int> perm, int depth) {
-	if (is_goal(perm)) {
-		std::cout << "It found the permutation in DFS\n";
-		return true;
-	}
-	if (depth == 0) 
-		return false;
+
+bool SwapSorter::DFS(std::vector<int> perm, int depth, int &count) {
+	count++;
+	if (is_goal(perm)) return true;
+	if (depth == 0) return false;
 	std::vector< std::vector<int> > neighbors = get_neighbors(perm);
 	int parentIndex = permToInt(perm);
-	visited[parentIndex] = true;
 	for (std::vector<int> n: neighbors) {
 		int childIndex = permToInt(n);
-		if (!visited[childIndex]) {
-			visited[childIndex] = true;
+		if( DFS(n, depth-1, count)== true){
 			parent[childIndex] = parentIndex;
-			return DFS(n, depth-1);
+			return true;
 		}
 	}
 	return false;
 }
 
-bool SwapSorter::IDS(std::vector<int> perm) {
-	if (is_goal(perm)) {
-		return true;
-	}
-	int depth = 1;
-    while (!DFS(perm, depth)) {	
+
+bool SwapSorter::IDS(std::vector<int> perm, int &count) {
+	if (is_goal(perm)) return true;
+	int depth = 0; 
+	std::fill(visited.begin(), visited.end(), 0);// Reset both the parent and the visited vectors for the next iteration of DFS	
+	std::fill(parent.begin(), parent.end(), -1);
+	while (!DFS(perm, depth, count)) {	
+		std::fill(visited.begin(), visited.end(), 0);// Reset both the parent and the visited vectors for the next iteration of DFS	
+		std::fill(parent.begin(), parent.end(), -1);
 		depth++;
 	}
+
 	return true;
 }
 
 
-bool  SwapSorter::BFS (std::vector<int> perm){
+bool  SwapSorter::BFS (std::vector<int> perm, int &max_size, int &count){
 	if (is_goal(perm)) return true;
 	queue<vector<int>> Q;
 	std::fill(visited.begin(), visited.end(), 0);
@@ -140,9 +136,12 @@ bool  SwapSorter::BFS (std::vector<int> perm){
 	Q.push(perm);
 	int index = permToInt(perm);
 	visited[index] = true;
-    std::vector<int> current;
+	std::vector<int> current;
 	while (!Q.empty()){
+		count++;
 		current = Q.front();
+		int curr_size =Q.size();
+		max_size = std::max(max_size, curr_size);
 		Q.pop();
 		int parentIndex = permToInt(current);
 		if (is_goal(current)) return true;
