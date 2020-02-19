@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 #include "time.h"
-#include <bits/stdc++.h>
+#include <sstream>
 int main() {
 	std::vector<int> user_input;
 	std::string input;
