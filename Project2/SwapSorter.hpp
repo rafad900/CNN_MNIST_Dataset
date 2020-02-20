@@ -11,6 +11,7 @@ class SwapSorter {
 		std::vector<int> swap_section(std::vector<int> perm, int l, int r);
 		SwapSorter(std::vector<int> user_input);
 		void print(std::vector<int> perms);
+		void sort();
 
 	private:
 		bool is_goal(std::vector<int> perm);
@@ -21,6 +22,8 @@ class SwapSorter {
 		std::vector<bool> visited;
 		std::vector<int> parent;
 		std::vector<int> path;
+		int accumulator = 0;
+
 		/* Things we were using the previous project. 
 		 * They are not implemented in the cpp file
 		 * just in case you were wondering			*/

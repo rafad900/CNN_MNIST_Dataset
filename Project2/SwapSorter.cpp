@@ -62,4 +62,19 @@ bool SwapSorter::is_goal(std::vector<int> perm) { // THis quecks for the goal in
 	return perm == sorted_numbers;
 }
 
+void SwapSorter::sort() {
+	MinHeap *heap =  new MinHeap(0, accumulator);
+	heap->insertKey(numbers);
+	while( !heap->empty() ) {
+		std::vector<int> parent = heap->deleteMinKey();
+		std::vector< std::vector<int> > neighbors = get_neighbors(parent);
+		if ( is_goal(parent) ) { break; } 
+		for (std::vector<int> c : neighbors) {
+			heap->insertKey(c);
+		}
+	}
+	// ----------------
+	// FOR YOU BIPIN, I THINK ALL YOU NEED IS TO ASSING THE PARENTS IN THE VECTOR
+	// -----------------
 
+}

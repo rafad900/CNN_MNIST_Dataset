@@ -18,23 +18,7 @@ int main() {
 	}
 
 	SwapSorter *sorter = new SwapSorter(user_input);
-	std::cout<<"Start BFS:"<<std::endl;
-	double start_time = clock();
-	sorter->BFSsort();
-	double finish_time = clock();
-	double time = ((finish_time - start_time)/ CLOCKS_PER_SEC );
-	std::cout<< "Time Taken by BFS       : "<<time<<" sec"<<std::endl;
-	delete sorter;
-
-	SwapSorter *sorter_ = new SwapSorter(user_input);
-	std::cout<<"\nStart IDS:"<<std::endl;
-	start_time = clock();
-	sorter_->IDSsort();
-	finish_time = clock();
-	time = ((finish_time - start_time)/ CLOCKS_PER_SEC );
-	std::cout<< "Time Taken by IDS       : "<<time<<" sec"<<std::endl;
-	delete sorter_;
-
+	sorter->sort();
 
 	std::cout << std::endl;
 	return 0;

@@ -1,13 +1,14 @@
 #include "MinHeap.hpp"
 
-MinHeap::MinHeap(int c) : capacity{c} {}
+MinHeap::MinHeap(int c, int tc) : capacity{c}, totalcapacity{tc} {}
 
 void MinHeap::insertKey(std::vector<int> perm) {
 	int child = capacity - 1;
 	int p;
 	p = parent(child);
-	vectorheap[capacity-1] = perm;
-	while (child != 0 && breakheap[p] > breakheap[child]) {
+	breakheap.push_back( breakpoints(perm) );
+	vectorheap.push_back( perm );
+	while (child <= 0 && breakheap[p] > breakheap[child]) {
 		swap(child, p);
 	}
 	capacity++;	
@@ -24,6 +25,7 @@ std::vector<int> MinHeap::deleteMinKey() {
 		capacity--;
 		heapify(0);
 	}
+	capacity--;
 	return root;
 }
 
@@ -39,6 +41,14 @@ void MinHeap::heapify(int i) {
 		swap(s, i);
 		heapify(s);
 	}
+}
+
+int MinHeap::breakpoints(std::vector<int> &perm) {
+	int bcount = 0;
+	for (int i = 1; i < perm.size(); i++)
+		if (abs(perm[i-1]-perm[i]) > 1)
+			bcount++;
+	return bcount;
 }
 
 void MinHeap::swap(int c, int p) {
@@ -60,4 +70,10 @@ int MinHeap::right(int i) {
 
 int MinHeap::parent(int i) {
 	return (i-1)/2;
+}
+
+bool MinHeap::empty() {
+	if (capacity > 0) 
+		return false;
+	return true;
 }
