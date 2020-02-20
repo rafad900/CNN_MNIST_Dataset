@@ -4,6 +4,7 @@
 #include <string>
 #include "time.h"
 #include <sstream>
+
 int main() {
 	std::vector<int> user_input;
 	std::string input;
