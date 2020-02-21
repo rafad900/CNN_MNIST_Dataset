@@ -25,7 +25,7 @@ std::vector<int> MinHeap::deleteMinKey() {
 		capacity--;
 		heapify(0);
 	}
-	capacity--;
+	//capacity--;
 	return root;
 }
 

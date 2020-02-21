@@ -11,7 +11,8 @@ class SwapSorter {
 		std::vector<int> swap_section(std::vector<int> perm, int l, int r);
 		SwapSorter(std::vector<int> user_input);
 		void print(std::vector<int> perms);
-		void sort();
+		void paths();
+		bool sort();
 
 	private:
 		bool is_goal(std::vector<int> perm);
@@ -19,8 +20,8 @@ class SwapSorter {
 		std::vector<int> numbers;
 		std::vector<int> sorted_numbers;
 		std::vector< std::vector<int> > swaps;
-		std::vector<bool> visited;
 		std::vector<int> parent;
+        std::vector<int> visited;
 		std::vector<int> path;
 		int accumulator = 0;
 

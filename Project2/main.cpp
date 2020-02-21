@@ -18,7 +18,12 @@ int main() {
 	}
 
 	SwapSorter *sorter = new SwapSorter(user_input);
-	sorter->sort();
+	if (sorter->sort()){
+	    sorter->paths();
+	}
+	else{
+	    std::cout<< " Path not found."<<std::endl;
+	}
 
 	std::cout << std::endl;
 	return 0;

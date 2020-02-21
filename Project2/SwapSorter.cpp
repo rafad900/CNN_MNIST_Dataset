@@ -18,6 +18,22 @@ SwapSorter::SwapSorter(std::vector<int> user_input): numbers(user_input) {
 	}
 }
 
+void SwapSorter::paths(){
+    int numOfmoves=0;
+    int next_index = permToInt(sorted_numbers);
+    std::cout<<" Parent vector : ";
+    for (int i = 0; i < parent.size() ; ++i) {
+        std::cout<< parent[i]<< "  ";
+    }
+    std::cout<<std::endl;
+    while (parent[next_index] != -1) {
+        numOfmoves++;
+        path.push_back(next_index);
+        next_index = parent[next_index];
+    }
+    std::cout<<"Number of moves to sort : "<< numOfmoves<<std::endl;
+    print(path);
+}
 void SwapSorter::print(std::vector<int> perms) {							
 	std::cout << "[ ";
 	for (int i = 0; i < numbers.size(); i++) {
@@ -62,19 +78,24 @@ bool SwapSorter::is_goal(std::vector<int> perm) { // THis quecks for the goal in
 	return perm == sorted_numbers;
 }
 
-void SwapSorter::sort() {
+bool SwapSorter::sort() {
+    std::fill(parent.begin(), parent.end(), -1);
 	MinHeap *heap =  new MinHeap(0, accumulator);
 	heap->insertKey(numbers);
+
 	while( !heap->empty() ) {
-		std::vector<int> parent = heap->deleteMinKey();
-		std::vector< std::vector<int> > neighbors = get_neighbors(parent);
-		if ( is_goal(parent) ) { break; } 
+		std::vector<int> current = heap->deleteMinKey();
+        int parentIndex = permToInt(current);
+        visited[parentIndex] = true;
+		if ( is_goal(current) ) { return true; }
+        std::vector< std::vector<int> > neighbors = get_neighbors(current);
 		for (std::vector<int> c : neighbors) {
-			heap->insertKey(c);
+            int index = permToInt(c);
+		    if (!visited[index]){
+                parent[index] = parentIndex;
+                heap->insertKey(c);
+            }
 		}
 	}
-	// ----------------
-	// FOR YOU BIPIN, I THINK ALL YOU NEED IS TO ASSING THE PARENTS IN THE VECTOR
-	// -----------------
-
+    return false;
 }
