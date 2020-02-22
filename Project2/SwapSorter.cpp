@@ -89,9 +89,9 @@ bool SwapSorter::sort() {
 		std::vector<int> current = heap->deleteMinKey();
         int parentIndex = permToInt(current);
 		visited[parentIndex] = true;
-		std::cout << "This is current: "; heap->printperm(current); 
+		/*std::cout << "This is current: "; heap->printperm(current); 
 		std::cout << "This its break : " << heap->breakpoints(current) << std::endl;
-		if ( is_goal(current) ) { return true; }
+		*/if ( is_goal(current) ) { return true; }
         std::vector< std::vector<int> > neighbors = get_neighbors(current);
 		for (std::vector<int> c : neighbors) {
             int index = permToInt(c);
