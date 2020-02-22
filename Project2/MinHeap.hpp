@@ -13,17 +13,16 @@ class MinHeap {
 		int parent(int i);
 		bool empty();
 		void print();
+		void printperm(std::vector<int> &perm);
+		int breakpoints(std::vector<int> &perm);
 
-		
 	private:
 		int totalcapacity;
 		int capacity;
 		std::vector< std::vector<int> > vectorheap;
 		std::vector<int> breakheap;
-		void printperm(std::vector<int> &perm);
 		void heapify(int i);
 		void swap(int c, int p);
-		int breakpoints(std::vector<int> &perm);
 
 };
 

@@ -1,6 +1,6 @@
 #include "MinHeap.hpp"
 #include <iostream>
-
+#include <iomanip>
 MinHeap::MinHeap(int c, int tc) : capacity{c}, totalcapacity{tc} {}
 
 void MinHeap::insertKey(std::vector<int> perm) {
@@ -85,10 +85,12 @@ void MinHeap::printperm(std::vector<int> &perm) {
 	}
 	std::cout << "]";
 }
+
 void MinHeap::print() {
 	std::vector<int> breakactual;
 	std::cout << std::endl;
+	std::cout << "Permutation" << std::setw(20) << " BCountActual: " << std::setw(20) << "BCountVector: " << std::endl;
 	for (int i = 0; i < vectorheap.size(); i++) {
-		printperm(vectorheap[i]); std::cout << ", BCountActual: " << breakpoints(vectorheap[i]) << "BCount in vector: " << breakheap[i] << std::endl;
+		printperm(vectorheap[i]); std::cout << std::setw(14) << breakpoints(vectorheap[i]) << std::setw(16) << breakheap[i] << std::endl;
 	}
 }

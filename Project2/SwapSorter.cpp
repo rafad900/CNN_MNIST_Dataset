@@ -82,11 +82,15 @@ bool SwapSorter::sort() {
     std::fill(parent.begin(), parent.end(), -1);
 	MinHeap *heap =  new MinHeap(0, accumulator);
 	heap->insertKey(numbers);
-
 	while( !heap->empty() ) {
+		std::cout << "Press enter for next while loop\n";	// HERE IS THE STOP FOR THE WHILE LOOP  BIPIN!!
+		std::cin.get();										// You can comment or delete it if you want lines below also print other stuff
+		heap->print();
 		std::vector<int> current = heap->deleteMinKey();
         int parentIndex = permToInt(current);
-        visited[parentIndex] = true;
+		visited[parentIndex] = true;
+		std::cout << "This is current: "; heap->printperm(current); 
+		std::cout << "This its break : " << heap->breakpoints(current) << std::endl;
 		if ( is_goal(current) ) { return true; }
         std::vector< std::vector<int> > neighbors = get_neighbors(current);
 		for (std::vector<int> c : neighbors) {

@@ -7,8 +7,8 @@ objects=SwapSorter.o MinHeap.o
 A.out: $(objects) main.o
 	g++ $(FLAGS) -o A.out main.o $(objects)
 
-test.out: $(objects) test.o
-	g++ $(FLAGS) -o test.out test.o $(objects)
+T.out: $(objects) test.o
+	g++ $(FLAGS) -o T.out test.o $(objects)
 
 .cpp.o: 
 	g++ $(FLAGS) -c $< -o $@
