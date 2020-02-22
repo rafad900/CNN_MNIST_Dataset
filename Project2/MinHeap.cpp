@@ -1,4 +1,5 @@
 #include "MinHeap.hpp"
+#include <iostream>
 
 MinHeap::MinHeap(int c, int tc) : capacity{c}, totalcapacity{tc} {}
 
@@ -25,7 +26,6 @@ std::vector<int> MinHeap::deleteMinKey() {
 		capacity--;
 		heapify(0);
 	}
-	//capacity--;
 	return root;
 }
 
@@ -76,4 +76,19 @@ bool MinHeap::empty() {
 	if (capacity > 0) 
 		return false;
 	return true;
+}
+
+void MinHeap::printperm(std::vector<int> &perm) {
+	std::cout << "[";
+	for (int i = 0; i < perm.size(); i++) {
+		std::cout << perm[i] << " ";
+	}
+	std::cout << "]";
+}
+void MinHeap::print() {
+	std::vector<int> breakactual;
+	std::cout << std::endl;
+	for (int i = 0; i < vectorheap.size(); i++) {
+		printperm(vectorheap[i]); std::cout << ", BCountActual: " << breakpoints(vectorheap[i]) << "BCount in vector: " << breakheap[i] << std::endl;
+	}
 }
