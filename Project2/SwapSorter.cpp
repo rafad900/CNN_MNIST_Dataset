@@ -20,11 +20,7 @@ SwapSorter::SwapSorter(std::vector<int> user_input): numbers(user_input) {
 
 void SwapSorter::paths(){
     int numOfmoves=0;
-    int next_index = permToInt(sorted_numbers);
-    std::cout<<" Parent vector : ";
-    for (int i = 0; i < parent.size() ; ++i) {
-        std::cout<< parent[i]<< "  ";
-    }
+    int next_index = permToInt(sorted_numbers);}
     std::cout<<std::endl;
     while (parent[next_index] != -1) {
         numOfmoves++;

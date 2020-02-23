@@ -18,12 +18,17 @@ int main() {
 	}
 
 	SwapSorter *sorter = new SwapSorter(user_input);
+    double start_time = clock();
 	if (sorter->sort()){
 	    sorter->paths();
 	}
 	else{
 	    std::cout<< " Path not found."<<std::endl;
 	}
+    double finish_time = clock();
+    double time = ((finish_time - start_time)/ CLOCKS_PER_SEC );
+    std::cout<< "Time Taken by A*       : "<<time<<" sec"<<std::endl;
+	delete sorter;
 
 	std::cout << std::endl;
 	return 0;
