@@ -16,9 +16,9 @@ int main() {
 	{
 		user_input.push_back(temp);
 	}
-
-	SwapSorter *sorter = new SwapSorter(user_input);
     double start_time = clock();
+	SwapSorter *sorter = new SwapSorter(user_input);
+
 	if (sorter->sort()){
 	    sorter->paths();
 	}
