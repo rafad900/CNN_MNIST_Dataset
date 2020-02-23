@@ -20,8 +20,7 @@ SwapSorter::SwapSorter(std::vector<int> user_input): numbers(user_input) {
 
 void SwapSorter::paths(){
     int numOfmoves=0;
-    int next_index = permToInt(sorted_numbers);}
-    std::cout<<std::endl;
+    int next_index = permToInt(sorted_numbers);
     while (parent[next_index] != -1) {
         numOfmoves++;
         path.push_back(next_index);
@@ -79,9 +78,7 @@ bool SwapSorter::sort() {
 	MinHeap *heap =  new MinHeap(0, accumulator);
 	heap->insertKey(numbers);
 	while( !heap->empty() ) {
-		std::cout << "Press enter for next while loop\n";	// HERE IS THE STOP FOR THE WHILE LOOP  BIPIN!!
-		std::cin.get();										// You can comment or delete it if you want lines below also print other stuff
-		heap->print();
+		//heap->print();
 		std::vector<int> current = heap->deleteMinKey();
         int parentIndex = permToInt(current);
 		visited[parentIndex] = true;
