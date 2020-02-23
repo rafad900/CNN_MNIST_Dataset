@@ -11,6 +11,8 @@ void MinHeap::insertKey(std::vector<int> perm) {
 	vectorheap.push_back( perm );
 	while (child >= 0 && breakheap[p] > breakheap[child]) {
 		swap(child, p);
+		child = p;
+		p = parent(child);
 	}
 	capacity++;	
 }
