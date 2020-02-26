@@ -6,7 +6,7 @@
 class MinHeap {
 	public:
 		MinHeap(int c, int tc);
-		void insertKey(std::vector<int> perm);
+		void insertKey(std::vector<int> perm, int w);
 		std::vector<int> deleteMinKey();
 		int left(int i);
 		int right(int i);

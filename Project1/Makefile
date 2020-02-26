@@ -1,8 +1,8 @@
 .SUFFIXES: .o .cpp .out
 
-FLAGS=-std=c++17 -ggdb -I ./../Project1
-
 objects=main.o SwapSorter.o 
+
+FLAGS=-std=c++17 -ggdb
 
 m.out: $(objects) 
 	g++ $(FLAGS) -o m.out $(objects)

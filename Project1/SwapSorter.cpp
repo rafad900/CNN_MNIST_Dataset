@@ -83,6 +83,7 @@ void SwapSorter::BFSsort(){
 
 std::vector< std::vector<int> > SwapSorter::get_neighbors( std::vector<int> parent) {
 	std::vector< std::vector<int> > temp_neighbors;
+	std::vector<int> temp;
 	for (int a = 0; a < parent.size(); a++) {			// Should perform swaps from left to right
 		for (int b = a+1; b < parent.size(); b++) {	// Should perform swaps from right to left
 			temp_neighbors.push_back(swap_section(parent, a, b));

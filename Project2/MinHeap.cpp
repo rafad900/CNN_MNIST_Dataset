@@ -3,11 +3,11 @@
 #include <iomanip>
 MinHeap::MinHeap(int c, int tc) : capacity{c}, totalcapacity{tc} {}
 
-void MinHeap::insertKey(std::vector<int> perm) {
+void MinHeap::insertKey(std::vector<int> perm, int w ) {
 	int child = capacity - 1;
 	int p;
 	p = parent(child);
-	breakheap.push_back( breakpoints(perm)/2 );
+	breakheap.push_back( breakpoints(perm)/2 + w );
 	vectorheap.push_back( perm );
 	while (child >= 0 && breakheap[p] > breakheap[child]) {
 		swap(child, p);

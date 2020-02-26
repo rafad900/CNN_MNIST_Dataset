@@ -21,7 +21,8 @@ class SwapSorter {
 		std::vector<int> sorted_numbers;
 		std::vector< std::vector<int> > swaps;
 		std::vector<int> parent;
-        std::vector<int> visited;
+		std::vector<bool> visited;
+		std::vector<int> distance;
 		std::vector<int> path;
 		int accumulator = 0;
 
