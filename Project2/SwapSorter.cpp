@@ -91,14 +91,14 @@ bool SwapSorter::sort() {
 		for (std::vector<int> c : neighbors) {
 			int index = permToInt(c);
 			if (!visited[index]){
-			visited[index] = true;
+		//	visited[index] = true;
 			parent[index] = parentIndex;
-			}
+		//	}
 			distance[index] = distance[parentIndex] +1 ;
-			heap->insertKey(c,distance[index]);
-			//		}
-
 		}
+			heap->insertKey(c,distance[index]);
+		
+	}
 	}
 	return false;
 }
