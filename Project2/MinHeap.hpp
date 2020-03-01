@@ -20,7 +20,7 @@ class MinHeap {
 		int totalcapacity;
 		int capacity;
 		std::vector< std::vector<int> > vectorheap;
-		std::vector<int> breakheap;
+		std::vector<double> breakheap;
 		void heapify(int i);
 		void swap(int c, int p);
 

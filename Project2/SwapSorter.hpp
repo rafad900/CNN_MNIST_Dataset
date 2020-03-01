@@ -13,16 +13,16 @@ class SwapSorter {
 		void print(std::vector<int> perms);
 		void paths();
 		bool sort();
+		std::vector< std::vector<int> > get_neighbors( std::vector<int> parent);
 
 	private:
 		bool is_goal(std::vector<int> perm);
-		std::vector< std::vector<int> > get_neighbors( std::vector<int> parent);
 		std::vector<int> numbers;
 		std::vector<int> sorted_numbers;
 		std::vector< std::vector<int> > swaps;
 		std::vector<int> parent;
 		std::vector<bool> visited;
-		std::vector<int> distance;
+		std::vector<double> distance;
 		std::vector<int> path;
 		int accumulator = 0;
 

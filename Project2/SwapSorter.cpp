@@ -34,15 +34,15 @@ void SwapSorter::print(std::vector<int> perms) {
 	std::cout << "[ ";
 	for (int i = 0; i < numbers.size(); i++) {
 		std::cout << numbers[i] << " ";
-	} 
-	std::cout << "]\n";
-	for (int i = perms.size()-1; i >= 0; i--) {
-		std::vector<int> temp = intToPerm(perms[i], numbers.size());
-		std::cout << "[ ";
-		for (int j = 0; j < temp.size(); j++) {
-			std::cout << temp[j] << " ";
-		}
-		std::cout << "]\n";
+    }
+    std::cout << "]\n";
+    for (int i = perms.size()-1; i >= 0; i--) {
+	    std::vector<int> temp = intToPerm(perms[i], numbers.size());
+        std::cout << "[ ";
+        for (int j = 0; j < temp.size(); j++) {
+	        std::cout << temp[j] << " ";
+        }
+        std::cout << "]\n";
 	}
 }
 
@@ -62,7 +62,7 @@ std::vector<int> SwapSorter::swap_section(std::vector<int> parent_perm, int l, i
 
 std::vector< std::vector<int> > SwapSorter::get_neighbors( std::vector<int> parent) {
 	std::vector< std::vector<int> > temp_neighbors;
-	for (int a = 0; a < parent.size(); a++) {			// Should perform swaps from left to right
+	for (int a = 0; a < parent.size()-1; a++) {			// Should perform swaps from left to right
 		for (int b = a+1; b < parent.size(); b++) {	// Should perform swaps from right to left
 			temp_neighbors.push_back(swap_section(parent, a, b));
 		}
@@ -80,25 +80,24 @@ bool SwapSorter::sort() {
 	MinHeap *heap =  new MinHeap(0, accumulator);
 	heap->insertKey(numbers,0);
 	while( !heap->empty() ) {
-//		heap->print();
+		std::cin.get();
+		heap->print();
 		std::vector<int> current = heap->deleteMinKey();
 		int parentIndex = permToInt(current);
 		visited[parentIndex] = true;
-//		std::cout << "This is current: "; heap->printperm(current); 
-//		std::cout << "This its break : " << heap->breakpoints(current) << std::endl;
+		std::cout << "This is current: "; heap->printperm(current); 
+		std::cout << "This its break : " << heap->breakpoints(current) + distance[permToInt(current)] << std::endl;
 		if ( is_goal(current) ) { return true; }
 		std::vector< std::vector<int> > neighbors = get_neighbors(current);
 		for (std::vector<int> c : neighbors) {
 			int index = permToInt(c);
 			if (!visited[index]){
-		//	visited[index] = true;
-			parent[index] = parentIndex;
-		//	}
-			distance[index] = distance[parentIndex] +1 ;
-		}
+		 		visited[index] = true;
+				parent[index] = parentIndex;
+		    }
+			distance[index] = distance[parentIndex] + 1.0 ;
 			heap->insertKey(c,distance[index]);
-		
-	}
+		}
 	}
 	return false;
 }
