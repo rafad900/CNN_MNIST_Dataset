@@ -77,30 +77,34 @@ bool SwapSorter::is_goal(std::vector<int> perm) { // THis quecks for the goal in
 bool SwapSorter::sort() {
 	std::fill(parent.begin(), parent.end(), -1);
 	std::fill(visited.begin(), visited.end(), false);
-	MinHeap *heap =  new MinHeap(0, accumulator);
+	std::fill(distance.begin(),distance.end(),0);
+	MinHeap *heap =  new MinHeap(0);
 	heap->insertKey(numbers,0);
 	while( !heap->empty() ) {
-//		heap->print();
+		//		heap->print();
 		std::vector<int> current = heap->deleteMinKey();
 		int parentIndex = permToInt(current);
 		visited[parentIndex] = true;
-//		std::string a;
-//		std::getline(cin,a);
-//		std::cout << "This is current: "; heap->printperm(current); 
-//		std::cout << "This its break : " << heap->breakpoints(current) << std::endl;
-//`		heap->print();
-		if ( is_goal(current) ) { return true; }
+	//	std::string a;
+	//	std::getline(cin,a);
+	//	std::cout << "This is current: "; heap->printperm(current); 
+	//	std::cout << "This its break : " << heap->breakpoints(current) << std::endl;
+	//	heap->print();
+		if ( is_goal(current) ) { 
+			std::cout<<"Max Size : " << heap->getmax_size()<<std::endl;
+			return true; }
 		std::vector< std::vector<int> > neighbors = get_neighbors(current);
 		for (std::vector<int> c : neighbors) {
 			int index = permToInt(c);
 			if (!visited[index]){
 				visited[index] = true;
-			
 				parent[index] = parentIndex;
 			}
 			distance[index] = distance[parentIndex] +1 ;
+	//	}
 			heap->insertKey(c,distance[index]);
-		
+//	}
+
 		}
 	}	
 	return false;
