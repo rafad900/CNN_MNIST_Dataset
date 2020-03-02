@@ -84,10 +84,6 @@ bool SwapSorter::sort() {
 		std::vector<int> current = heap->deleteMinKey();
 		int parentIndex = permToInt(current);
 		visited[parentIndex] = true;
-		//std::cin.get();
-		//std::cout << "This is current: "; heap->printperm(current); 
-		//std::cout << "This its break : " << heap->breakpoints(current) << std::endl;
-		//heap->print();
 		if ( is_goal(current) ) { 
 			std::cout<<"Max Size : " << heap->getmax_size()<<std::endl;
 			return true; 
@@ -96,13 +92,12 @@ bool SwapSorter::sort() {
 		for (std::vector<int> c : neighbors) {
 			int index = permToInt(c);
 			if (!visited[index] ){
-				//visited[index] = true;
+				//visited[index] = true;     // REMOVING THIS WAS THE LAST PART, you already made it true on line 86 and I suppose doing this was messing with the search 
 				if (parent[index] == -1) 
 					parent[index] = parentIndex;
 				else if (parent[index] <= parentIndex) 
 					continue;
 			}
-
 			distance[index] = distance[parentIndex] +1 ;
 			heap->insertKey(c,distance[index]);
 		}
