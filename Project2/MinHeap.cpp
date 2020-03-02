@@ -4,19 +4,21 @@
 
 extern int permToInt(std::vector<int> perm);
 
-MinHeap::MinHeap(int c, int tc) : capacity{c}, totalcapacity{tc} {}
+MinHeap::MinHeap(int c) : capacity{c} {}
 
 void MinHeap::insertKey(std::vector<int> perm, int w ) {
-	capacity++;
+	capacity ++;
 	int child = capacity - 1;
-	int p = parent(child);
-	breakheap.push_back( (breakpoints(perm)) + w );
+	int p;
+	p = parent(child);
+	double fx =  breakpoints(perm)+ w; 
+	breakheap.push_back(fx);
 	vectorheap.push_back( perm );
-	while (child >= 0 && breakheap[p] > breakheap[child]) {
+	while (child != 0 && breakheap[p] > breakheap[child]) {
 		swap(child, p);
-		child = p;
-		p = parent(child);
+		child = parent(child);
 	}
+	max_size++;	
 }
 
 std::vector<int> MinHeap::deleteMinKey() {
@@ -24,12 +26,14 @@ std::vector<int> MinHeap::deleteMinKey() {
 	if (capacity == 0) 
 		return empty;
 	std::vector<int> root = vectorheap[0];
-	if (capacity > 1) {
-		vectorheap[0] = vectorheap[capacity-1];
-		breakheap[0]  = breakheap[capacity-1];
-		heapify(0);
+	if (capacity == 1){
+		capacity--;
+		return root;
 	}
+	vectorheap[0] = vectorheap[capacity-1];
+	breakheap[0]  = breakheap[capacity-1];
 	capacity--;
+	heapify(0);
 	return root;
 }
 
@@ -47,16 +51,16 @@ void MinHeap::heapify(int i) {
 	}
 }
 
-int MinHeap::breakpoints(std::vector<int> &perm) {
+double MinHeap::breakpoints(std::vector<int> &perm) {
 	int bcount = 0;
 	for (int i = 1; i < perm.size(); i++)
 		if (abs(perm[i-1]-perm[i]) > 1)
 			bcount++;
-	return bcount/2.0;
+	return ((double) bcount/2.0);
 }
 
 void MinHeap::swap(int c, int p) {
-	int breaktemp = breakheap[c];
+	double breaktemp = breakheap[c];
 	std::vector<int> vectortemp = vectorheap[c];
 	breakheap[c]  = breakheap[p];
 	breakheap[p]  = breaktemp;
@@ -92,7 +96,8 @@ void MinHeap::printperm(std::vector<int> &perm) {
 
 void MinHeap::print() {
 	std::vector<int> breakactual;
-	std::cout << std::endl;
+	std::cout.precision(3);
+	std::cout << std::fixed << std::endl;
 	std::cout << "Permutation" << std::setw(20) << " BCountActual: " << std::setw(20) << "BCountVector: " << std::endl;
 	for (int i = 0; i < vectorheap.size(); i++) {
 		std::cout << std::left << std::setw(3) <<  permToInt(vectorheap[i]);

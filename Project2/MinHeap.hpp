@@ -5,7 +5,7 @@
 
 class MinHeap {
 	public:
-		MinHeap(int c, int tc);
+		MinHeap(int c);
 		void insertKey(std::vector<int> perm, int w);
 		std::vector<int> deleteMinKey();
 		int left(int i);
@@ -14,10 +14,11 @@ class MinHeap {
 		bool empty();
 		void print();
 		void printperm(std::vector<int> &perm);
-		int breakpoints(std::vector<int> &perm);
+		double  breakpoints(std::vector<int> &perm);
+		int getmax_size(){ return max_size;}
 
 	private:
-		int totalcapacity;
+		int max_size=0;
 		int capacity;
 		std::vector< std::vector<int> > vectorheap;
 		std::vector<double> breakheap;
