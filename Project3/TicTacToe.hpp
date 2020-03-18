@@ -8,6 +8,15 @@ public:
     int minMax(std::vector<std::vector<char>> board);
     int count(std::vector<std::vector<char>> curr_board, char X_or_O);
 
+	// THIS IS THE STUFF I ADDED ***************************************/
+	int minMaxAB(std::vector< std::vector<char> > board, int depth, int A, int B );
+	void positionGenerator();
+	int evalOne (std::vector< std::vector<char> > board);
+	int evalTwo (std::vector< std::vector<char> > board);
+
+
+
 private:
+	int p [24][4][2];
     std::vector<std::vector<char>> _board;
 };
