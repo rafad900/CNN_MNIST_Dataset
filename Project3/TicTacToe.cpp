@@ -132,14 +132,16 @@ std::vector<std::vector<std::vector<char>>> TicTacToe::successor(std::vector<std
 
 
 
-int TicTacToe::minMax(std::vector<std::vector<char>> board){
+int TicTacToe::minMax(std::vector<std::vector<char>> board, int &nodes){
 	int value;
 	bool max_turn = false;
-    if ( std::abs(count(board, 'X') - count(board,'O')) > 1) {
-        std::cout<< "Invalid Board" << std::endl;
-        return -1;
-    }
-	if (leaf(board)) {
+
+//    if ( std::abs(count(board, 'X') - count(board,'O')) > 1) {
+//        std::cout<< "Invalid Board" << std::endl;
+//        return -1;
+//    }
+    nodes++;
+    if (leaf(board)) {
         return Eval(board);
     }
 
@@ -156,11 +158,168 @@ int TicTacToe::minMax(std::vector<std::vector<char>> board){
 	for (std::vector<std::vector<char>> n : neighbors){
 
 		if (max_node(board)) {
-            value = std::max(value, minMax(n));
+            value = std::max(value, minMax(n, nodes));
         }
 		else {
-            value = std::min(value, minMax(n));
+            value = std::min(value, minMax(n,nodes));
         }
 	}
 	return value;
+}
+/**********************************************************************************************/
+// THIS IS THE STUFF THAT I ADDED 
+/**********************************************************************************************/
+
+// This generates all the 4 tuple that are winning moves
+void TicTacToe::positionGenerator() {
+	int num = 0; // Number of possible wins
+	for (int i = 1; i < 5; i++) {
+//		p[num][0][0] = 0;
+//		p[num][0][1] = i;
+        p[num][1][1] = 1;
+        p[num][1][2] = i;
+		for (int j = 1; j < 5; j++) {
+			if (j != i) {
+				p[num][2][1] = 2;
+				p[num][2][2] = j;
+				for (int k = 1; k < 5; k++) {
+					if (k != i && k != j) {
+						p[num][3][1] = 3;
+						p[num][3][2] = k;
+						for (int l = 1; l < 5; l++) {
+							if (l != i && l != j && l != k) {
+								p[num][4][1] = 4;
+								p[num][4][2] = l;
+								num++;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+// The min max with alpha and beta
+int TicTacToe::minMaxAB(std::vector< std::vector<char> > board, int depth, int A, int B, int &nodes) {
+    nodes++;
+	if (depth == 0 || leaf(board)) {
+	    int e0 = Eval(board);
+	    if (e0 != 0)
+	        return e0;
+        else if ( (A + B) % 7 == 0)
+            return evalOne(board);
+        return evalTwo(board);
+	}
+	int res;
+    if (max_node(board)) {
+		res = A;
+		std::vector< std::vector< std::vector<char> > > successors = successor(board, true);
+		for (std::vector< std::vector<char> > c: successors) {
+			int val = minMaxAB(c, depth-1, res, B, nodes);
+			res = std::max(res, val);
+			if (res >= B)
+				return res;
+		}
+	} else {
+		res = B;
+		std::vector< std::vector< std::vector<char> > > successors = successor(board, true);
+		for (std::vector< std::vector<char> > c: successors) {
+			int val = minMaxAB(board, depth-1, A, res, nodes);
+			res = std::min(res, val);
+			if (res <= A)
+				return res;
+		}
+	}
+	return res;
+}
+
+// This is the first evaluate function 
+int TicTacToe::evalOne(std::vector< std::vector<char> > board) {
+	int numberofwaysX = 0;
+	int numberofwaysO = 0;
+	for (int n = 0; n < 24; n++) {
+		// Just the positions of each tuple
+		int onex = p[n][1][1];
+		int oney = p[n][1][2];
+		int twox = p[n][2][1];
+		int twoy = p[n][2][2];
+		int threex = p[n][3][1];
+		int threey = p[n][3][2];
+		int fourx = p[n][4][1];
+		int foury = p[n][4][2];
+
+		// This is for player1
+		if ((board[onex][oney]=='X'||board[onex][oney]=='\0')&&(board[twox][twoy]=='X'||board[twox][twoy]=='\0')
+		  &&(board[threex][threey]=='X'||board[threex][threey]=='\0')&&(board[fourx][foury]=='X'||board[fourx][foury]=='\0'))
+			numberofwaysX++;
+		// This is now for the player2
+		if ((board[onex][oney]=='O'||board[onex][oney]=='\0')&&(board[twox][twoy]=='O'||board[twox][twoy]=='\0')
+		  &&(board[threex][threey]=='O'||board[threex][threey]=='\0')&&(board[fourx][foury]=='O'||board[fourx][foury]=='\0'))
+			numberofwaysO++;
+	}
+	return numberofwaysX - numberofwaysO;
+}
+
+// This is the second evaluate function
+int TicTacToe::evalTwo(std::vector< std::vector<char> > board) {
+	// These don't mean the same thing as the other evaluate function
+	int fiveX = 0;
+	int fiveO = 0;
+	int twoX = 0;
+	int twoO = 0;
+	int oneX = 0;
+	int oneO = 0;
+	int countofplayer1 = 0;
+	int countofplayer2 = 0;
+
+	for (int n = 0; n < 24; n++) {
+		// These here are the positions of the tuple
+        int onex = p[n][1][1];
+        int oney = p[n][1][2];
+        int twox = p[n][2][1];
+        int twoy = p[n][2][2];
+        int threex = p[n][3][1];
+        int threey = p[n][3][2];
+        int fourx = p[n][4][1];
+        int foury = p[n][4][2];
+		
+		// Make sure that no pieces of player 2 are in the tuple positions when checking for player1
+		if (board[onex][oney]=='O' || board[twox][twoy]=='O' || board[threex][threey]=='O' || board[fourx][foury]=='O')
+			continue;
+		if (board[onex][oney]=='X') { countofplayer1++; }
+		if (board[twox][twoy]=='X') { countofplayer1++; }
+		if (board[threex][threey]=='X') { countofplayer1++; }
+		if (board[fourx][foury]=='X' && countofplayer1 <= 3) { countofplayer1++; }
+
+		if (countofplayer1 == 3) { fiveX++; }
+		if (countofplayer1 == 2) { twoX++;  }
+		if (countofplayer1 == 1) { oneX++;  }
+	}
+
+	for (int n = 0; n < 24; n++) {
+        int onex = p[n][1][1];
+        int oney = p[n][1][2];
+        int twox = p[n][2][1];
+        int twoy = p[n][2][2];
+        int threex = p[n][3][1];
+        int threey = p[n][3][2];
+        int fourx = p[n][4][1];
+        int foury = p[n][4][2];
+		
+		if (board[onex][oney]=='X' || board[twox][twoy]=='X' || board[threex][threey]=='X' || board[fourx][foury]=='X')
+			continue;
+		if (board[onex][oney]=='O') { countofplayer2++; }
+		if (board[twox][twoy]=='O') { countofplayer2++; }
+		if (board[threex][threey]=='O') { countofplayer2++; }
+		if (board[fourx][foury]=='O' && countofplayer2 <= 3) { countofplayer2++; }
+
+		if (countofplayer1 == 3) { fiveO++; }
+		if (countofplayer1 == 2) { twoO++;  }
+		if (countofplayer1 == 1) { oneO++;  }
+	}
+	
+	// Maybe I'm still doing it wrong but this is the only way that I could make sense of it 
+	// And it's consistent with the examples that ravi gives. 
+	return ( ( 5 * fiveX + 2 * twoX + 1 * oneX ) - ( 5 * fiveO + 2 * twoO + 1 * oneO) );	
 }

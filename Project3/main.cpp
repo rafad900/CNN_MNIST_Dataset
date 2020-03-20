@@ -2,6 +2,9 @@
 #include<vector>
 #include <fstream>
 #include "TicTacToe.hpp"
+#include <limits.h>
+#include "time.h"
+
 
 int main(int argc, char *argv[]) {
 	std::vector< std::vector<char> > board (5, std::vector<char> (5,'\0')); 
@@ -57,9 +60,31 @@ int main(int argc, char *argv[]) {
 		}
 		std::cout<<std::endl;
 	}
+	int nodes = 0;
 	TicTacToe * game = new TicTacToe(board);
-	double point = game->minMax(board);
-	std::cout<<"Chances: "<< point<< std::endl;
+
+	double start_time = clock();
+	int point = game->minMax(board, nodes);
+	double finish_time = clock();
+	double time = ((finish_time - start_time)/ CLOCKS_PER_SEC );
+	std::cout << "\nMinimax Algorithm: "<< std::endl;
+	std::cout << "Root Node Value          : "<< point <<std::endl;
+	std::cout << "Number of nodes expanded : " << nodes <<std::endl;
+	std::cout << "Best Move Found          : "<< std::endl;
+	std::cout << "CPU time                 : " << time<<" s" << std::endl;
+	nodes = 0;
+
+	start_time = clock();
+	point = game->minMaxAB(board,5,INT_MIN,INT_MAX, nodes);
+	finish_time = clock();
+	time = ((finish_time - start_time)/ CLOCKS_PER_SEC );
+	std::cout << "\n\nAlpha-Beta Pruning Algorithm: "<< std::endl;
+	std::cout << "Root Node Value          : "<< point <<std::endl;
+	std::cout << "Number of nodes expanded : " << nodes <<std::endl;
+	std::cout << "Best Move Found          : "<< std::endl;
+	std::cout << "CPU time                 : " << time<< "s" << std::endl;
+
+
 
 	return 0;
 }
