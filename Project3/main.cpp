@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
 	std::cout << "Root Node Value          : "<< point <<std::endl;
 	std::cout << "Number of nodes expanded : " << nodes <<std::endl;
 	std::cout << "Best Move Found          : "<< std::endl;
-	std::cout << "CPU time                 : " << time<< "s" << std::endl;
+	std::cout << "CPU time                 : " << time<< " s" << std::endl;
 
 
 

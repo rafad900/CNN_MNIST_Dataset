@@ -7,7 +7,7 @@
 
 TicTacToe::TicTacToe(std::vector<std::vector<char>> board): _board{board}  {}
 
-int TicTacToe::count(std::vector<std::vector<char>> curr_board, char X_or_O){
+int TicTacToe::count(std::vector<std::vector<char>> &curr_board, char X_or_O){
     int xCount = 0, oCount =0;
     for (int x = 0; x < curr_board.size(); x++)
         for (int y = 0; y < curr_board[x].size(); y++)
@@ -22,7 +22,7 @@ int TicTacToe::count(std::vector<std::vector<char>> curr_board, char X_or_O){
 
 }
 
-int checkWinner(std::vector<std::vector<char>> curr_board) {
+int checkWinner(std::vector<std::vector<char>> &curr_board) {
     bool Xrow1 = 0, Xrow2 = 0, Xrow3 = 0, Xrow4 = 0;
     bool Orow1 = 0, Orow2 = 0, Orow3 = 0, Orow4 = 0;
     bool Xcol1 = 0, Xcol2 = 0, Xcol3 = 0, Xcol4 = 0;
@@ -75,7 +75,7 @@ int checkWinner(std::vector<std::vector<char>> curr_board) {
     else
         return 0;
 }
-bool TicTacToe::leaf(std::vector<std::vector<char>> curr_board) {
+bool TicTacToe::leaf(std::vector<std::vector<char>> &curr_board) {
     if ( count(curr_board, 'X') == 8 &&  count(curr_board,'O') == 8 )
         return true;
     else if( checkWinner(curr_board) != 0)
@@ -84,18 +84,18 @@ bool TicTacToe::leaf(std::vector<std::vector<char>> curr_board) {
 	return false;
 }
 
-bool TicTacToe::max_node(std::vector<std::vector<char>> current_board){
+bool TicTacToe::max_node(std::vector<std::vector<char>> &current_board){
     if ( count(current_board, 'X') <= count(current_board,'O'))
 		return true;
 	return false;
 }
 
-int TicTacToe::Eval (std::vector<std::vector<char>> curr_board){
+int TicTacToe::Eval (std::vector<std::vector<char>> &curr_board){
     return checkWinner(curr_board);
 }
 
 
-std::vector<std::vector<std::vector<char>>> TicTacToe::successor(std::vector<std::vector<char>> current_board, bool turn){
+std::vector<std::vector<std::vector<char>>> TicTacToe::successor(std::vector<std::vector<char>> &current_board, bool turn){
 	std::vector<std::vector<std::vector<char>>> children;
 	std::vector<std::vector<char>> newBoard  = current_board;
 	int totalSpots = 16 - (count(current_board, 'X') + count(current_board,'O'));
@@ -132,14 +132,14 @@ std::vector<std::vector<std::vector<char>>> TicTacToe::successor(std::vector<std
 
 
 
-int TicTacToe::minMax(std::vector<std::vector<char>> board, int &nodes){
+int TicTacToe::minMax(std::vector<std::vector<char>>& board, int &nodes){
 	int value;
 	bool max_turn = false;
 
-//    if ( std::abs(count(board, 'X') - count(board,'O')) > 1) {
-//        std::cout<< "Invalid Board" << std::endl;
-//        return -1;
-//    }
+    if ( std::abs(count(board, 'X') - count(board,'O')) > 1) {
+        std::cout<< "Invalid Board" << std::endl;
+        return -1;
+    }
     nodes++;
     if (leaf(board)) {
         return Eval(board);
@@ -207,7 +207,7 @@ int TicTacToe::minMaxAB(std::vector< std::vector<char> > board, int depth, int A
 	    int e0 = Eval(board);
 	    if (e0 != 0)
 	        return e0;
-        else if ( (A + B) % 7 == 0)
+        else if ( (A + B) % 2 == 0)
             return evalOne(board);
         return evalTwo(board);
 	}
