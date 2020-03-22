@@ -19,59 +19,7 @@ void TicTacToe::count(std::vector<std::vector<char>> &curr_board, int &countX , 
 }
 
 int checkWinner(std::vector<std::vector<char>> &curr_board) {
-    bool Xrow1 = 0, Xrow2 = 0, Xrow3 = 0, Xrow4 = 0;
-    bool Orow1 = 0, Orow2 = 0, Orow3 = 0, Orow4 = 0;
-    bool Xcol1 = 0, Xcol2 = 0, Xcol3 = 0, Xcol4 = 0;
-    bool Ocol1 = 0, Ocol2 = 0, Ocol3 = 0, Ocol4 = 0;
 
-    /*
-    if (curr_board[1][1] == 'X' || curr_board[1][2] == 'X' || curr_board[1][3] == 'X' || curr_board[1][4] == 'X')
-        Xrow1 = 1;
-    if (curr_board[2][1] == 'X' || curr_board[2][2] == 'X' || curr_board[2][3] == 'X' || curr_board[2][4] == 'X')
-        Xrow2 = 1;
-    if (curr_board[3][1] == 'X' || curr_board[3][2] == 'X' || curr_board[3][3] == 'X' || curr_board[3][4] == 'X')
-        Xrow3 = 1;
-    if (curr_board[4][1] == 'X' || curr_board[4][2] == 'X' || curr_board[4][3] == 'X' || curr_board[4][4] == 'X')
-        Xrow4 = 1;
-
-    if (curr_board[1][1] == 'X' || curr_board[2][1] == 'X' || curr_board[3][1] == 'X' || curr_board[4][1] == 'X')
-        Xcol1 = 1;
-    if (curr_board[1][2] == 'X' || curr_board[2][2] == 'X' || curr_board[3][2] == 'X' || curr_board[4][2] == 'X')
-        Xcol2 = 1;
-    if (curr_board[1][3] == 'X' || curr_board[2][3] == 'X' || curr_board[3][3] == 'X' || curr_board[4][3] == 'X')
-        Xcol3 = 1;
-    if (curr_board[1][4] == 'X' || curr_board[2][4] == 'X' || curr_board[3][4] == 'X' || curr_board[4][4] == 'X')
-        Xcol4 = 1;
-
-
-    if (curr_board[1][1] == 'O' || curr_board[1][2] == 'O' || curr_board[1][3] == 'O' || curr_board[1][4] == 'O')
-        Orow1 = 1;
-    if (curr_board[2][1] == 'O' || curr_board[2][2] == 'O' || curr_board[2][3] == 'O' || curr_board[2][4] == 'O')
-        Orow2 = 1;
-    if (curr_board[3][1] == 'O' || curr_board[3][2] == 'O' || curr_board[3][3] == 'O' || curr_board[3][4] == 'O')
-        Orow3 = 1;
-    if (curr_board[4][1] == 'O' || curr_board[4][2] == 'O' || curr_board[4][3] == 'O' || curr_board[4][4] == 'O')
-        Orow4 = 1;
-
-    if (curr_board[1][1] == 'O' || curr_board[2][1] == 'O' || curr_board[3][1] == 'O' || curr_board[4][1] == 'O')
-        Ocol1 = 1;
-    if (curr_board[1][2] == 'O' || curr_board[2][2] == 'O' || curr_board[3][2] == 'O' || curr_board[4][2] == 'O')
-        Ocol2 = 1;
-    if (curr_board[1][3] == 'O' || curr_board[2][3] == 'O' || curr_board[3][3] == 'O' || curr_board[4][3] == 'O')
-        Ocol3 = 1;
-    if (curr_board[1][4] == 'O' || curr_board[2][4] == 'O' || curr_board[3][4] == 'O' || curr_board[4][4] == 'O')
-        Ocol4 = 1;
-
-// 1 --> X wins
-// -1 --> O wins
-// 0 --> draw
-    if (Xcol1 && Xcol2 && Xcol3 && Xcol4 && Xrow1 && Xrow2 && Xrow3 && Xrow4)
-        return 10;
-    else if (Ocol1 && Ocol2 && Ocol3 && Ocol4 && Orow1 && Orow2 && Orow3 && Orow4)
-        return -10;
-    else
-        return 0;
-        */
     bool Xrows[5] = {0, 0, 0, 0, 0};
     bool Orows[5] = {0, 0, 0, 0, 0};
     bool Xcols[5] = {0, 0, 0, 0, 0};
