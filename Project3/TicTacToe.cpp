@@ -323,3 +323,31 @@ int TicTacToe::evalTwo(std::vector< std::vector<char> > board) {
 	// And it's consistent with the examples that ravi gives. 
 	return ( ( 5 * fiveX + 2 * twoX + 1 * oneX ) - ( 5 * fiveO + 2 * twoO + 1 * oneO) );	
 }
+
+void TicTacToe::bestmove() {
+	// Set the variables
+	int max = INT_MIN;
+	std::vector<std::vector<std::vector<char>>> children = successor(_board, max_node(_board));
+	std::vector<std::vector<char>> best_child;
+	// Look through all the children and find best one
+	for (std::vector<std::vector<char>> c: children) {
+		int possible_max = Eval(c);
+		if (possible_max > max) 
+			max = possible_max;
+			best_child = c;
+	}
+	// Set the position to the pointer
+	for (int x = 1; x < 5; x++) { 
+		for (int y = 1; y < 5; y++) {
+			if (best_child[x][y] != _board[x][y]) {
+				pbm[0] = x;
+				pbm[1] = y;
+			}
+		}
+	}
+}
+
+
+void TicTacToe::print_best_move() {
+	std::cout << pbm[0] << " " << pbm[1];
+}

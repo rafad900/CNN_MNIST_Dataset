@@ -1,3 +1,5 @@
+#include <string>
+
 class TicTacToe{
 public:
     TicTacToe(std::vector<std::vector<char>> board);
@@ -13,10 +15,13 @@ public:
 	void positionGenerator();
 	int evalOne (std::vector< std::vector<char> > board);
 	int evalTwo (std::vector< std::vector<char> > board);
-
+	void bestmove ();
+	void print_best_move();
 
 
 private:
+	int best_move[2];
+	int (*pbm) = best_move;
 	int p [24][5][3];
     std::vector<std::vector<char>> _board;
 };

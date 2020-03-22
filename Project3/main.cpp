@@ -62,15 +62,16 @@ int main(int argc, char *argv[]) {
 	}
 	int nodes = 0;
 	TicTacToe * game = new TicTacToe(board);
+	game->bestmove();
 
 	double start_time = clock();
-	int point = game->minMax(board, nodes);
+	int point = 0;//game->minMax(board, nodes);
 	double finish_time = clock();
-	double time = ((finish_time - start_time)/ CLOCKS_PER_SEC );
+ 	double time = ((finish_time - start_time)/ CLOCKS_PER_SEC );
 	std::cout << "\nMinimax Algorithm: "<< std::endl;
 	std::cout << "Root Node Value          : "<< point <<std::endl;
 	std::cout << "Number of nodes expanded : " << nodes <<std::endl;
-	std::cout << "Best Move Found          : "<< std::endl;
+	std::cout << "Best Move Found          : "; game->print_best_move();  std::cout <<std::endl;
 	std::cout << "CPU time                 : " << time<<" s" << std::endl;
 	nodes = 0;
 
@@ -83,8 +84,6 @@ int main(int argc, char *argv[]) {
 	std::cout << "Number of nodes expanded : " << nodes <<std::endl;
 	std::cout << "Best Move Found          : "<< std::endl;
 	std::cout << "CPU time                 : " << time<< " s" << std::endl;
-
-
 
 	return 0;
 }
