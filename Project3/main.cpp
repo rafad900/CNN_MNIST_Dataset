@@ -70,8 +70,8 @@ int main(int argc, char *argv[]) {
  	double time = ((finish_time - start_time)/ CLOCKS_PER_SEC );
 	std::cout << "\nMinimax Algorithm: "<< std::endl;
 	std::cout << "Root Node Value          : "<< point <<std::endl;
-	std::cout << "Number of nodes expanded : " << nodes <<std::endl;
-	std::cout << "Best Move Found          : "; game->print_best_move();  std::cout <<std::endl;
+	std::cout << "Number of nodes expanded : " << nodes  <<std::endl;
+	std::cout << "Best Move Found          : (" ; game->print_best_move();  std::cout <<")"<<std::endl;
 	std::cout << "CPU time                 : " << time<<" s" << std::endl;
 	nodes = 0;
 
@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
 	std::cout << "\n\nAlpha-Beta Pruning Algorithm: "<< std::endl;
 	std::cout << "Root Node Value          : "<< point <<std::endl;
 	std::cout << "Number of nodes expanded : " << nodes <<std::endl;
-	std::cout << "Best Move Found          : "<< std::endl;
+	std::cout << "Best Move Found          : ("; game->print_best_move();  std::cout <<")"<<std::endl;
 	std::cout << "CPU time                 : " << time<< " s" << std::endl;
 
 	return 0;
