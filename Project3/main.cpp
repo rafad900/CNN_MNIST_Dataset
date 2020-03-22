@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
 	game->bestmove();
 
 	double start_time = clock();
-	int point = 0;//game->minMax(board, nodes);
+	int point = game->minMax(board, nodes);
 	double finish_time = clock();
  	double time = ((finish_time - start_time)/ CLOCKS_PER_SEC );
 	std::cout << "\nMinimax Algorithm: "<< std::endl;

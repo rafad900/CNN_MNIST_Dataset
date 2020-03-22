@@ -24,6 +24,26 @@ int checkWinner(std::vector<std::vector<char>> &curr_board) {
     bool Xcol1 = 0, Xcol2 = 0, Xcol3 = 0, Xcol4 = 0;
     bool Ocol1 = 0, Ocol2 = 0, Ocol3 = 0, Ocol4 = 0;
 
+	bool Xrows[4] = {0, 0, 0, 0};
+	bool Orows[4] = {0, 0, 0, 0};
+	bool Xcols[4] = {0, 0, 0, 0};
+	bool Ocols[4] = {0, 0, 0, 0};
+
+	for (int x = 1; x < 5; x++) {
+		for (int y = 1; y < 5; y++) {
+			char rowpiece = curr_board[y][x];   // So what changes here is the first position according to your if statements for row
+			char colpiece = curr_board[x][y];	// Then for column, the second position changes 
+			if (rowpiece == 'X') 				
+				Xrows[y] = 1;		// I use y because regardless of the if statement, they always increase by 1
+			if (rowpiece == 'O')
+				Orows[y] = 1;
+			if (colpiece == 'X') 
+				Xcols[y] = 1;
+			if (colpiece == 'O')
+				Ocols[y] = 1;	
+		}
+	}
+	/*
     if (curr_board[1][1] == 'X' || curr_board[1][2] == 'X' || curr_board[1][3] == 'X' || curr_board[1][4] == 'X')
         Xrow1 = 1;
     if (curr_board[2][1] == 'X' || curr_board[2][2] == 'X' || curr_board[2][3] == 'X' || curr_board[2][4] == 'X')
@@ -69,7 +89,14 @@ int checkWinner(std::vector<std::vector<char>> &curr_board) {
     else if (Ocol1 && Ocol2 && Ocol3 && Ocol4 && Orow1 && Orow2 && Orow3 && Orow4)
         return -10;
     else
-        return 0;
+        return 0;*/ 
+
+	if (Xcols[0] && Xcols[1] && Xcols[2] && Xcols[3] && Xrows[0] && Xrows[1] && Xrows[2] && Xrows[3])
+		return 10;
+	else if (Ocols[0] && Ocols[1] && Ocols[2] && Ocols[3] && Orows[0] && Orows[1] && Orows[2] && Orows[3])
+		return -10;
+	else 
+		return 0;
 }
 bool TicTacToe::leaf(std::vector<std::vector<char>> &curr_board) {
     int countX = 0, countO = 0;
@@ -339,3 +366,5 @@ void TicTacToe::bestmove() {
 void TicTacToe::print_best_move() {
 	std::cout << pbm[0] << " " << pbm[1];
 }
+
+

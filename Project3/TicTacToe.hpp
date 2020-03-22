@@ -19,6 +19,7 @@ public:
 	void print_best_move();
 
 
+
 private:
 	int best_move[2];
 	int (*pbm) = best_move;
