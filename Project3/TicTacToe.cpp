@@ -5,7 +5,7 @@
 #include <limits.h>
 
 
-TicTacToe::TicTacToe(std::vector<std::vector<char>> board): _board{board}  {}
+TicTacToe::TicTacToe(std::vector<std::vector<char>> board): _board{board}  {positionGenerator();}
 
 void TicTacToe::count(std::vector<std::vector<char>> &curr_board, int &countX , int &countO){
     for (int x = 1; x < 5; x++) {
@@ -137,20 +137,18 @@ int TicTacToe::minMax(std::vector<std::vector<char>>& board, int &nodes){
 void TicTacToe::positionGenerator() {
 	int num = 0; // Number of possible wins
 	for (int i = 1; i < 5; i++) {
-//		p[num][0][0] = 0;
-//		p[num][0][1] = i;
-        p[num][1][1] = 1;
-        p[num][1][2] = i;
 		for (int j = 1; j < 5; j++) {
 			if (j != i) {
-				p[num][2][1] = 2;
-				p[num][2][2] = j;
 				for (int k = 1; k < 5; k++) {
 					if (k != i && k != j) {
-						p[num][3][1] = 3;
-						p[num][3][2] = k;
 						for (int l = 1; l < 5; l++) {
 							if (l != i && l != j && l != k) {
+								p[num][1][1] = 1;
+								p[num][1][2] = i;
+								p[num][2][1] = 2;
+								p[num][2][2] = j;
+								p[num][3][1] = 3;
+								p[num][3][2] = k;
 								p[num][4][1] = 4;
 								p[num][4][2] = l;
 								num++;
