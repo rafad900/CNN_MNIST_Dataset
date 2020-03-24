@@ -11,7 +11,7 @@ public:
     void count(std::vector<std::vector<char>> &curr_board, int &countX , int &countO);
 
 	// THIS IS THE STUFF I ADDED ***************************************/
-	int minMaxAB(std::vector< std::vector<char> > board, int depth, int A, int B , int & nodes);
+	int minMaxAB(std::vector< std::vector<char> > &board, int depth, int A, int B , int & nodes);
 	void positionGenerator();
 	int evalOne (std::vector< std::vector<char> > board);
 	int evalTwo (std::vector< std::vector<char> > board);
