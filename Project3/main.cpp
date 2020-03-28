@@ -4,7 +4,8 @@
 #include "TicTacToe.hpp"
 #include <limits.h>
 #include "time.h"
-
+#define onunderline "\033[4m"
+#define offunderline "\033[0m"
 
 int main() {
 
@@ -53,9 +54,12 @@ int main() {
 
             }
             inputStream.close();
-            for (int i = 0; i < 5; ++i) {
-                for (int j = 0; j < 5; ++j) {
-                    std::cout << board[i][j];
+            for (int i = 1; i < 5; ++i) {
+                for (int j = 1; j < 5; ++j) {
+					if (board[i][j] == 'X' || board[i][j] == 'O')
+ 	                   	std::cout << onunderline << board[i][j] << offunderline;
+					else 
+						std::cout << onunderline << " " << offunderline;
                 }
                 std::cout << std::endl;
             }

@@ -285,6 +285,7 @@ int TicTacToe::evalTwo(std::vector< std::vector<char> > board) {
 	return ( ( 5 * fiveX + 2 * twoX + 1 * oneX ) - ( 5 * fiveO + 2 * twoO + 1 * oneO) );	
 }
 
+// Gets the best move of the starting board
 void TicTacToe::bestmove() {
 	// Set the variables
 	int max = INT_MIN;
@@ -308,7 +309,7 @@ void TicTacToe::bestmove() {
 	}
 }
 
-
+// Prints out the best move of the starting board
 void TicTacToe::print_best_move() {
 	std::cout << pbm[0] << " " << pbm[1];
 }
