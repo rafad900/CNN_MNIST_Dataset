@@ -162,17 +162,17 @@ void TicTacToe::positionGenerator() {
 }
 
 // The min max with alpha and beta
-int TicTacToe::minMaxAB(std::vector< std::vector<char> > &board, int depth , int A, int B, int &nodes, int &nodeAB, int &nodeMM) {
+int TicTacToe::minMaxAB(std::vector< std::vector<char> > &board, int depth , int A, int B, int &nodes, int &nodes1, int &nodes2) {
     nodes++;
 	if ( leaf(board) || depth == 0) {
 	    int e0 = Eval(board);
 	    if (e0 != 0)
 	        return e0;
-        else if ( (A + B) % 2 == 0) {
-			nodeMM++;
+        else if ( (A + B) % 3 == 0) {
+			nodes1++;
             return evalOne(board);
         } else {
-			nodeAB++;
+			nodes2++;
 			return evalTwo(board);
 		}
 	}
@@ -181,7 +181,7 @@ int TicTacToe::minMaxAB(std::vector< std::vector<char> > &board, int depth , int
 		res = A;
 		std::vector< std::vector< std::vector<char> > > successors = successor(board, true);
 		for (std::vector< std::vector<char> > c: successors) {
-			int val = minMaxAB(c, depth -1, res, B, nodes, nodeAB, nodeMM);
+			int val = minMaxAB(c, depth -1, res, B, nodes, nodes1, nodes2);
 			res = std::max(res, val);
 			if (res >= B)
 				return res;
@@ -190,7 +190,7 @@ int TicTacToe::minMaxAB(std::vector< std::vector<char> > &board, int depth , int
 		res = B;
 		std::vector< std::vector< std::vector<char> > > successors = successor(board, false);
 		for (std::vector< std::vector<char> > c: successors) {
-			int val = minMaxAB(c, depth -1, A, res, nodes, nodeAB, nodeMM);
+			int val = minMaxAB(c, depth -1, A, res, nodes, nodes1, nodes2);
 			res = std::min(res, val);
 			if (res <= A)
 				return res;
