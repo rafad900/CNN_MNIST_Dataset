@@ -8,6 +8,7 @@
 #define offunderline "\033[0m"
 
 int main() {
+    std::cout << " MY PROGRAM USES X, O, - or _  OPTIONS." << std::endl;
 
     while (true) {
         int option;
