@@ -64,6 +64,8 @@ int main() {
                 std::cout << std::endl;
             }
             int nodes = 0;
+			int nodeAB = 0;
+			int nodeMM = 0;
             TicTacToe *game = new TicTacToe(board);
             game->bestmove();
             if (option == 1) {
@@ -86,12 +88,14 @@ int main() {
                 std::cin >> depth;
                 nodes = 0;
                 double start_time = clock();
-                int pointAB = game->minMaxAB(board, depth, INT_MIN, INT_MAX, nodes);
+                int pointAB = game->minMaxAB(board, depth, INT_MIN, INT_MAX, nodes, nodeAB, nodeMM);
                 double finish_time = clock();
                 double time = ((finish_time - start_time) / CLOCKS_PER_SEC);
                 std::cout << "\nAlpha-Beta Pruning Algorithm: " << std::endl;
                 std::cout << "Root Node Value          : " << pointAB << std::endl;
                 std::cout << "Number of nodes expanded : " << nodes << std::endl;
+				std::cout << "Nodes expanded by e1	   : " << nodeMM << std::endl;
+				std::cout << "Nodes expanded by e2	   : " << nodeAB << std::endl; 
                 std::cout << "Best Move Found          : (";
                 game->print_best_move();
                 std::cout << ")" << std::endl;
