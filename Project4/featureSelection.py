@@ -106,14 +106,14 @@ def main():
         features = featureExtraction(image)
         for f in features:
             feature_file.write("%s, " % str(f))
-        feature_file.write("7\n")
+        feature_file.write("0\n")
 
     for image in images_9:
         #print(image)       DEBUGGING PURPOSES
         features = featureExtraction(image)
         for f in features:
             feature_file.write("%s, " % str(f))
-        feature_file.write("9\n")
+        feature_file.write("1\n")
     
     feature_file.close()
 

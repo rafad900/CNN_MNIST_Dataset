@@ -9,6 +9,7 @@ class Neuron:
         self.feature_file = 0
         self.weights = []
         self.threshold = 0
+        self.test_file = 0
 
     def prepare(self):
         if (os.path.exists('seven_and_nine_features.txt')):
@@ -26,8 +27,8 @@ class Neuron:
         
     def train(self):
         for a in range(1000): # 1000 epochs according to pdf
-            if (a%2 == 0):
-                print("These are the weigths every two epochs: ", end='')
+            if (a%10 == 0):
+                print("These are the weigths every ten epochs: ", end='')
                 print(self.weights)
             for line in self.feature_file:
                 features = line.split(',')
@@ -39,11 +40,7 @@ class Neuron:
             self.feature_file.seek(0)
 
     def adjust_weights(self, result, features):
-        y, t = 0, 0
-        if (int(features[-1]) == 9):
-            t = 1
-        if (result == 9):
-            y = 1
+        y, t = result, int(features[-1])
         w0 = self.weights[0] - 0.1*(y - t) * -1
         w1 = self.weights[1] - 0.1*(y - t) * float(features[0])
         w2 = self.weights[2] - 0.1*(y - t) * float(features[1])
@@ -58,8 +55,8 @@ class Neuron:
         for i in range(len(self.weights)):
             sum += float(features[i]) * self.weights[i]
         if (sum <= 0):
-            return 7
-        else: return 9
+            return 0
+        else: return 1
     
     def test(self):
         #gotta run the test images on the neuron
