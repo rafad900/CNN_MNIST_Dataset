@@ -1,5 +1,4 @@
-Project4/.vscode/launch.json
-Project4/.vscode/settings.json
+*.json
 seven_and_nine_features.txt
 *.pyc
 __pycache__
