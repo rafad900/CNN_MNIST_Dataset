@@ -70,52 +70,63 @@ def featureExtraction(image):
     return [density, symmetry, verticalAvg, verticalMax, horizontalAvg, horizontalMax]
 
 # Opens the csv files and extract the images from them and returns them 
-def open_images(path_7, path_9):
+def open_images(path):
     print("Opening and extracting images")
-    images_7 = []
-    images_9 = []
-    data_7 = pd.read_csv(path_7)
-    data_9 = pd.read_csv(path_9)
-    headers_7 = data_7.columns.values
-    headers_9 = data_9.columns.values
-    
-    pixels_7 = data_7.drop(headers_7[0], axis=1)
-    pixels_9 = data_9.drop(headers_9[0], axis=1)
+    images = []
+    data = pd.read_csv(path)
+    headers = data.columns.values
 
-    for i in range(0, 999):              
-        row_7 = pixels_7.iloc[i].to_numpy()
-        row_9 = pixels_9.iloc[i].to_numpy()
-        grid_7 = np.reshape(row_7, (28, 28))
-        grid_9 = np.reshape(row_9, (28, 28))
-        images_7.append(grid_7)
-        images_9.append(grid_9)
-    return images_7, images_9
+    labels = data[headers[0]]
+    
+    pixels = data.drop(headers[0], axis=1)
+
+    for i in range(0, data.shape[0]):              
+        row = pixels.iloc[i].to_numpy()
+        grid = np.reshape(row, (28, 28))
+        images.append(grid)
+    return labels, images
 
 # Main driver of all the code
 def main():
     images_7_path = input("Path to the images of 7:  ")
     images_9_path = input("Path to the images of 9:  ")
+    images_TEST_path = input("Path to the test images of 7 and 9: ")
 
-    images_7, images_9 = open_images(images_7_path, images_9_path)
+    labels_7, images_7 = open_images(images_7_path)
+    labels_9, images_9 = open_images(images_9_path)
+    labels_T, images_TEST = open_images(images_TEST_path)
 
-    feature_file = open('seven_and_nine_features.txt', 'w')
+    feature_file_TRAIN = open('seven_and_nine_features_TRAIN.txt', 'w')
+    feature_file_TEST = open('seven_and_nine_features_TEST.txt', 'w')
 
     print("Doing feature extraction")
     for image in images_7:
         #print(image)     DEBUGGING PURPOSES
         features = featureExtraction(image)
         for f in features:
-            feature_file.write("%s, " % str(f))
-        feature_file.write("0\n")
+            feature_file_TRAIN.write("%s, " % str(f))
+        feature_file_TRAIN.write("0\n")
 
     for image in images_9:
         #print(image)       DEBUGGING PURPOSES
         features = featureExtraction(image)
         for f in features:
-            feature_file.write("%s, " % str(f))
-        feature_file.write("1\n")
+            feature_file_TRAIN.write("%s, " % str(f))
+        feature_file_TRAIN.write("1\n")
+
+    for image in images_TEST:
+        features = featureExtraction(image)
+        i = 0
+        for f in features:
+            feature_file_TEST.write("%s, " % str(f))
+        if (labels_T[i] == '7'):
+            feature_file_TEST.write("0\n")
+        else: 
+            feature_file_TEST.write("1\n")
+        i += 1
     
-    feature_file.close()
+    feature_file_TRAIN.close()
+    feature_file_TEST.close()
 
 # Caller if invoked directly
 if __name__=='__main__':
