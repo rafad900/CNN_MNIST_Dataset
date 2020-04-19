@@ -37,6 +37,7 @@ class pcn:
 		inputs = np.concatenate((inputs,-np.ones((self.nData,1))),axis=1)
 		# Training
 		change = range(self.nData)
+	
 
 		for n in range(nIterations):
 			
@@ -68,6 +69,7 @@ class pcn:
 		outputs = np.dot(inputs,self.weights)
 	
 		nClasses = np.shape(targets)[1]
+		
 
 		if nClasses==1:
 			nClasses = 2

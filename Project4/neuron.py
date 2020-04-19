@@ -1,6 +1,10 @@
 from featureSelection import main
 import os
 import random
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import accuracy_score 
+from sklearn.metrics import classification_report 
+
 
 class Neuron:
 
@@ -42,6 +46,8 @@ class Neuron:
             #print("These are the weights at the end of iteration: ", end='')
             #print(self.weights)                    DEBUGGING PURPOSES
             self.feature_file_TRAIN.seek(0)
+        
+       
 
     def adjust_weights(self, result, features):
         ''' This is called when the training label doesn't match the actual label'''
@@ -70,11 +76,20 @@ class Neuron:
         for line in self.feature_file_TEST:
             features = line.split(',')
             result = self.predict(features)
-            if (result == 0):
+            if (result <= 0):
                 prediction_vector.append('7')
             else:
                 prediction_vector.append('9')
         self.create_test_result_file(prediction_vector)
+
+        #  nClasses = np.shape(targets)[1]
+        # cm = np.zeros((nClasses,nClasses))
+		# for i in range(nClasses):
+		# 	for j in range(nClasses):
+		# 		cm[i,j] = np.sum(np.where(outputs==i,1,0)*np.where(targets==j,1,0))
+
+		# print cm
+		# print np.trace(cm)/np.sum(cm)
     
     def create_test_result_file(self, vector):
         print("\n\nCreating new file that will contain predicted labels seperated by space according to the pdf\n")
@@ -91,4 +106,3 @@ if __name__=='__main__':
     neuron.prepare()
     neuron.train()
     neuron.test()
-

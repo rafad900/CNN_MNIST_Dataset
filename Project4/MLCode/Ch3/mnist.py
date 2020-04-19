@@ -23,6 +23,7 @@ train_in = tset[0][:nread,:]
 
 # This is a little bit of work -- 1 of N encoding
 # Make sure you understand how it does it
+
 train_tgt = np.zeros((nread,10))
 for i in range(nread):
     train_tgt[i,tset[1][i]] = 1

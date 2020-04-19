@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
-
+import random
+from numpy import array
 # Turns the image into black and white
 def getBlWhImage(image):
     pixels = []
@@ -47,10 +48,10 @@ def horizontalIntersection(image):
 # Calculates the symmetry in image
 def calculateSymmetry(image):
     count = 0
-    for x in range(19):
-        for y in range(19):
-            count = count + (int(image[x][y]) != int(image[27-x][y])) # This is xor
-    return count 
+    for x in range(28):
+        for y in range(28):
+            count = count + (int(image[x][y]) ^ int(image[27-x][y])) # This is xor
+    return count/(28*28) 
 
 # calculates the density
 def calculateDensity(image):
@@ -58,7 +59,7 @@ def calculateDensity(image):
     for x in range(28):
         for y in range(28):
             count = count + int(image[x][y])
-    return count/255
+    return count/(28*28)
 
 # calls the feature extraction functions and returns values as list
 def featureExtraction(image): 
@@ -77,6 +78,7 @@ def open_images(path):
     headers = data.columns.values
 
     labels = data[headers[0]]
+    labels = labels.values.tolist()
     
     pixels = data.drop(headers[0], axis=1)
 
@@ -88,38 +90,39 @@ def open_images(path):
 
 # Main driver of all the code
 def main():
-    images_7_path = input("Path to the images of 7:  ")
-    images_9_path = input("Path to the images of 9:  ")
-    images_TEST_path = input("Path to the test images of 7 and 9: ")
+    # images_7_path = input("Path to the images of 7:  ")
+    # images_9_path = input("Path to the images of 9:  ")
+    # images_TEST_path = input("Path to the test images of 7 and 9: ")
 
-    labels_7, images_7 = open_images(images_7_path)
-    labels_9, images_9 = open_images(images_9_path)
-    labels_T, images_TEST = open_images(images_TEST_path)
-
+    labels_7, images_7 = open_images("Project4_Data_set/train7.csv")
+    labels_9, images_9 = open_images("Project4_Data_set/train9.csv")
+    labels_T, images_TEST = open_images("Project4_Data_set/valid9.csv")
+    train_images = images_7 + images_9
+    train_label = labels_7 + labels_9
+    c = list(zip(train_label,train_images))
+    random.shuffle(c)
+    train_label,train_images = zip(*c)
     feature_file_TRAIN = open('seven_and_nine_features_TRAIN.txt', 'w')
     feature_file_TEST = open('seven_and_nine_features_TEST.txt', 'w')
-
     print("Doing feature extraction")
-    for image in images_7:
-        #print(image)     DEBUGGING PURPOSES
+    i = 0
+    for image in train_images:
         features = featureExtraction(image)
         for f in features:
             feature_file_TRAIN.write("%s, " % str(f))
-        feature_file_TRAIN.write("0\n")
+        if (train_label[i] == 7):
+            feature_file_TRAIN.write("0\n")
+        else: 
+            feature_file_TRAIN.write("1\n")
+        i += 1   
+    
 
-    for image in images_9:
-        #print(image)       DEBUGGING PURPOSES
-        features = featureExtraction(image)
-        for f in features:
-            feature_file_TRAIN.write("%s, " % str(f))
-        feature_file_TRAIN.write("1\n")
-
+    i = 0
     for image in images_TEST:
         features = featureExtraction(image)
-        i = 0
         for f in features:
             feature_file_TEST.write("%s, " % str(f))
-        if (labels_T[i] == '7'):
+        if (labels_T[i] == 7):
             feature_file_TEST.write("0\n")
         else: 
             feature_file_TEST.write("1\n")
