@@ -15,6 +15,7 @@ class Neuron:
         self.weights = []
         self.threshold = 0
         self.test_file = 0
+        self.target_labels = []
 
     def prepare(self):
         ''' Just getting things ready, opening files and setting variables'''
@@ -24,7 +25,7 @@ class Neuron:
             self.feature_file_TEST = open('seven_and_nine_features_TEST.txt', 'r')
         else:
             print("\nIt did not find the file, calling main from featureSelection.py")
-            main()
+            self.target_labels = main()
             self.feature_file_TRAIN = open('seven_and_nine_features_TRAIN.txt', 'r')
             self.feature_file_TEST = open('seven_and_nine_features_TEST.txt', 'r')
         for i in range(7):
@@ -46,9 +47,8 @@ class Neuron:
             #print("These are the weights at the end of iteration: ", end='')
             #print(self.weights)                    DEBUGGING PURPOSES
             self.feature_file_TRAIN.seek(0)
-        
-       
 
+        
     def adjust_weights(self, result, features):
         ''' This is called when the training label doesn't match the actual label'''
         y, t = result, int(features[-1])
@@ -72,27 +72,27 @@ class Neuron:
     
     def test(self):
         ''' Begins the test, similar to train, except you don't adjust weights if it gets it wrong'''
-        prediction_vector = []  
+        prediction_vector = [] 
+        i = 0
+        Correct_count = 0
         for line in self.feature_file_TEST:
             features = line.split(',')
             result = self.predict(features)
-            if (result <= 0):
+            if (result == 0):
                 prediction_vector.append('7')
+                if (self.target_labels[i] == 7):
+                    Correct_count+=1
             else:
                 prediction_vector.append('9')
+                if (self.target_labels[i] == 9):
+                    Correct_count+=1
+            i+=1
         self.create_test_result_file(prediction_vector)
+        print("Success Ratio: ", round(Correct_count/(len(prediction_vector)), 2))
 
-        #  nClasses = np.shape(targets)[1]
-        # cm = np.zeros((nClasses,nClasses))
-		# for i in range(nClasses):
-		# 	for j in range(nClasses):
-		# 		cm[i,j] = np.sum(np.where(outputs==i,1,0)*np.where(targets==j,1,0))
-
-		# print cm
-		# print np.trace(cm)/np.sum(cm)
     
     def create_test_result_file(self, vector):
-        print("\n\nCreating new file that will contain predicted labels seperated by space according to the pdf\n")
+        print("\n\nCreating new file that will contain predicted labels seperated by space\n")
         test_predictions = open("test_prediction.txt", 'w')
         for v in vector:
             test_predictions.write("%s " % v)

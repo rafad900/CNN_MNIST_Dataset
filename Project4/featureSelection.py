@@ -96,7 +96,7 @@ def main():
 
     labels_7, images_7 = open_images("Project4_Data_set/train7.csv")
     labels_9, images_9 = open_images("Project4_Data_set/train9.csv")
-    labels_T, images_TEST = open_images("Project4_Data_set/valid9.csv")
+    labels_T, images_TEST = open_images("Project4_Data_set/valid7.csv")
     train_images = images_7 + images_9
     train_label = labels_7 + labels_9
     c = list(zip(train_label,train_images))
@@ -130,6 +130,7 @@ def main():
     
     feature_file_TRAIN.close()
     feature_file_TEST.close()
+    return labels_T
 
 # Caller if invoked directly
 if __name__=='__main__':
