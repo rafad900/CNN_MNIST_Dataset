@@ -16,7 +16,7 @@ class MLP:
         # Weights, values, and others 
         self.output_of_output = []
 
-        self.input_weights  = [[],[],[],[],[],[],[],[],[],[],[]]
+        self.input_weights  = [[],[],[],[],[],[],[],[],[],[]]
 
         self.inputs = []
 
@@ -36,20 +36,28 @@ class MLP:
 
     def adjust_input_weights(self, targets):
         randomized = []
-        for i in range(len(self.num_output)):
+        for i in range((self.num_output)):
             randomized.append(i)
         random.shuffle(randomized)
         for i in randomized:
             for k in range(len(self.input_weights[i])):
-                self.input_weights[i][k] = self.input_weights[i][k] - (self.learning_rate * (self.output_of_output[i] - targets[i]) * self.inputs[i]) 
+                self.input_weights[i][k] = self.input_weights[i][k] - (self.learning_rate * (self.output_of_output[i] - targets[i]) * self.inputs[k]) # THIS MIGHT BE OFF BY THE inputs[k]  
 
-    def sigmoid_function(self, value):
-        return 1 / (1 + math.exp(-1 * value))
+    def activation_function(self, value):
+        if value <= 0:
+            return 0
+        if value > 0:
+            return 1
     
     def create_all_targets(self, target):
         targets = [0,0,0,0,0,0,0,0,0,0]  # One value for each of the ouput neurons 
         targets[int(target)] = 1
         return targets
+
+    def print_weights(self):
+        print("100 epochs passed, each line is an input neuron: ")
+        for neuron in self.input_weights:
+            print(neuron)
 
     # Calls the prediction function to begin the process of training the weights
     # Only trains if the prediction was wrong otherwise, continue
@@ -58,7 +66,7 @@ class MLP:
         for a in range(1000): # 1000 epochs according to pdf
             
             if (a%100 == 0): #Do we really need to print out the weights? Theres about 70 of them. Can you think of a smart way to do it?
-                print("100 epochs passed")
+                self.print_weights()
             for line in self.feature_file_TRAIN:
 
                 features = line.split(',')
@@ -77,6 +85,7 @@ class MLP:
                             continue
                         else:
                             passed_iteration = False # If the incorrect index of the output list is activated, the it did not pass
+                            break
 
                 if (not passed_iteration):
                     self.adjust_input_weights(all_targets)
@@ -87,15 +96,15 @@ class MLP:
     def predict(self, features):
         ''' Does the input times weight calculation for all inputs on the neuron'''
         input_sums = []
-        for i in range((self.num_input)):
+        for i in range((self.num_output)):
             sum = 0
-            for h in range((self.num_output)):
-                sum += features[i] * self.input_weights[h][i]
+            for h in range((self.num_input)):
+                sum += features[h] * self.input_weights[i][h]
             input_sums.append(sum)
         
         self.output_of_output = []
         for each_sum in input_sums:
-            self.output_of_output.append(self.sigmoid_function(each_sum))
+            self.output_of_output.append(self.activation_function(each_sum))
     
     # Begins the testing phase of the program. 
     # Not much else to say 

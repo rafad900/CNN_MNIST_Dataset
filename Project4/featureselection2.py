@@ -121,80 +121,60 @@ def main():
             label = total_labels[i]
             if (label == 0):
                 feature_file_TRAIN.write("0\n")
-                #feature_file_TRAIN.write("1, 0, 0, 0, 0, 0, 0, 0, 0, 0\n")
             elif (label == 1):
                 feature_file_TRAIN.write("1\n")
-                #feature_file_TRAIN.write("0, 1, 0, 0, 0, 0, 0, 0, 0, 0\n")
             elif (label == 2):
                 feature_file_TRAIN.write("2\n")
-                #feature_file_TRAIN.write("0, 0, 1, 0, 0, 0, 0, 0, 0, 0\n")
             elif (label == 3):
                 feature_file_TRAIN.write("3\n")
-                #feature_file_TRAIN.write("0, 0, 0, 1, 0, 0, 0, 0, 0, 0\n")
             elif (label == 4):
                 feature_file_TRAIN.write("4\n")
-                #feature_file_TRAIN.write("0, 0, 0, 0, 1, 0, 0, 0, 0, 0\n")
             elif (label == 5):
                 feature_file_TRAIN.write("5\n")
-                #feature_file_TRAIN.write("0, 0, 0, 0, 0, 1, 0, 0, 0, 0\n")
             elif (label == 6):
                 feature_file_TRAIN.write("6\n")
-                #feature_file_TRAIN.write("0, 0, 0, 0, 0, 0, 1, 0, 0, 0\n")
             elif (label == 7):
                 feature_file_TRAIN.write("7\n")
-                #feature_file_TRAIN.write("0, 0, 0, 0, 0, 0, 0, 1, 0, 0\n")
             elif (label == 8):
                 feature_file_TRAIN.write("8\n")
-                #feature_file_TRAIN.write("0, 0, 0, 0, 0, 0, 0, 0, 1, 0\n")
             elif (label == 9):
                 feature_file_TRAIN.write("9\n")
-                #feature_file_TRAIN.write("0, 0, 0, 0, 0, 0, 0, 0, 0, 1\n")
             i += 1   
         feature_file_TRAIN.close()
 
-
-    print("Doing feature extraction on test images")
-    feature_file_TEST = open('image_features_TEST.txt', 'w')
-    i = 0
-    for image in total_test_images:
-        features = featureExtraction(image)
-        feature_file_TEST.write("-1, ")
-        for f in features:
-            feature_file_TEST.write("%s, " % str(f))
-        label = total_test_labels[i]
-        if (label == 0):
-            feature_file_TEST.write("0\n")
-            #feature_file_TRAIN.write("1, 0, 0, 0, 0, 0, 0, 0, 0, 0\n")
-        elif (label == 1):
-            feature_file_TEST.write("1\n")
-            #feature_file_TRAIN.write("0, 1, 0, 0, 0, 0, 0, 0, 0, 0\n")
-        elif (label == 2):
-            feature_file_TEST.write("2\n")
-            #feature_file_TRAIN.write("0, 0, 1, 0, 0, 0, 0, 0, 0, 0\n")
-        elif (label == 3):
-            feature_file_TEST.write("3\n")
-            #feature_file_TRAIN.write("0, 0, 0, 1, 0, 0, 0, 0, 0, 0\n")
-        elif (label == 4):
-            feature_file_TEST.write("4\n")
-            #feature_file_TRAIN.write("0, 0, 0, 0, 1, 0, 0, 0, 0, 0\n")
-        elif (label == 5):
-            feature_file_TEST.write("5\n")
-            #feature_file_TRAIN.write("0, 0, 0, 0, 0, 1, 0, 0, 0, 0\n")
-        elif (label == 6):
-            feature_file_TEST.write("6\n")
-            #feature_file_TRAIN.write("0, 0, 0, 0, 0, 0, 1, 0, 0, 0\n")
-        elif (label == 7):
-            feature_file_TEST.write("7\n")
-            #feature_file_TRAIN.write("0, 0, 0, 0, 0, 0, 0, 1, 0, 0\n")
-        elif (label == 8):
-            feature_file_TEST.write("8\n")
-            #feature_file_TRAIN.write("0, 0, 0, 0, 0, 0, 0, 0, 1, 0\n")
-        elif (label == 9):
-            feature_file_TEST.write("9\n")
-            #feature_file_TRAIN.write("0, 0, 0, 0, 0, 0, 0, 0, 0, 1\n")
-        i += 1  
-    
-    feature_file_TEST.close()
+    if (not os.path.exists("image_features_TEST.txt")):
+        print("Doing feature extraction on test images")
+        feature_file_TEST = open('image_features_TEST.txt', 'w')
+        i = 0
+        for image in total_test_images:
+            features = featureExtraction(image)
+            feature_file_TEST.write("-1, ")
+            for f in features:
+                feature_file_TEST.write("%s, " % str(f))
+            label = total_test_labels[i]
+            if (label == 0):
+                feature_file_TEST.write("0\n")
+            elif (label == 1):
+                feature_file_TEST.write("1\n")
+            elif (label == 2):
+                feature_file_TEST.write("2\n")
+            elif (label == 3):
+                feature_file_TEST.write("3\n")
+            elif (label == 4):
+                feature_file_TEST.write("4\n")
+            elif (label == 5):
+                feature_file_TEST.write("5\n")
+            elif (label == 6):
+                feature_file_TEST.write("6\n")
+            elif (label == 7):
+                feature_file_TEST.write("7\n")
+            elif (label == 8):
+                feature_file_TEST.write("8\n")
+            elif (label == 9):
+                feature_file_TEST.write("9\n")
+            i += 1  
+        feature_file_TEST.close()
+        
     return total_test_labels
 
 # Caller if invoked directly
