@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import random
+import os
 from numpy import array
 # Turns the image into black and white
 def getBlWhImage(image):
@@ -108,49 +109,52 @@ def main():
         total_test_images += test_i
         total_test_labels += test_l
 
-    feature_file_TRAIN = open('image_features_TRAIN.txt', 'w')
-    feature_file_TEST = open('image_features_TEST.txt', 'w')
-    print("Doing feature extraction on training images")
-    i = 0
-    for image in total_images:
-        features = featureExtraction(image)
-        feature_file_TRAIN.write("-1, ")
-        for f in features:
-            feature_file_TRAIN.write("%s, " % str(f))
-        label = total_labels[i]
-        if (label == 0):
-            feature_file_TRAIN.write("0\n")
-            #feature_file_TRAIN.write("1, 0, 0, 0, 0, 0, 0, 0, 0, 0\n")
-        elif (label == 1):
-            feature_file_TRAIN.write("1\n")
-            #feature_file_TRAIN.write("0, 1, 0, 0, 0, 0, 0, 0, 0, 0\n")
-        elif (label == 2):
-            feature_file_TRAIN.write("2\n")
-            #feature_file_TRAIN.write("0, 0, 1, 0, 0, 0, 0, 0, 0, 0\n")
-        elif (label == 3):
-            feature_file_TRAIN.write("3\n")
-            #feature_file_TRAIN.write("0, 0, 0, 1, 0, 0, 0, 0, 0, 0\n")
-        elif (label == 4):
-            feature_file_TRAIN.write("4\n")
-            #feature_file_TRAIN.write("0, 0, 0, 0, 1, 0, 0, 0, 0, 0\n")
-        elif (label == 5):
-            feature_file_TRAIN.write("5\n")
-            #feature_file_TRAIN.write("0, 0, 0, 0, 0, 1, 0, 0, 0, 0\n")
-        elif (label == 6):
-            feature_file_TRAIN.write("6\n")
-            #feature_file_TRAIN.write("0, 0, 0, 0, 0, 0, 1, 0, 0, 0\n")
-        elif (label == 7):
-            feature_file_TRAIN.write("7\n")
-            #feature_file_TRAIN.write("0, 0, 0, 0, 0, 0, 0, 1, 0, 0\n")
-        elif (label == 8):
-            feature_file_TRAIN.write("8\n")
-            #feature_file_TRAIN.write("0, 0, 0, 0, 0, 0, 0, 0, 1, 0\n")
-        elif (label == 9):
-            feature_file_TRAIN.write("9\n")
-            #feature_file_TRAIN.write("0, 0, 0, 0, 0, 0, 0, 0, 0, 1\n")
-        i += 1   
-    
+    if (not os.path.exists("image_features_TRAIN.txt")):
+        feature_file_TRAIN = open('image_features_TRAIN.txt', 'w')
+        print("Doing feature extraction on training images")
+        i = 0
+        for image in total_images:
+            features = featureExtraction(image)
+            feature_file_TRAIN.write("-1, ")
+            for f in features:
+                feature_file_TRAIN.write("%s, " % str(f))
+            label = total_labels[i]
+            if (label == 0):
+                feature_file_TRAIN.write("0\n")
+                #feature_file_TRAIN.write("1, 0, 0, 0, 0, 0, 0, 0, 0, 0\n")
+            elif (label == 1):
+                feature_file_TRAIN.write("1\n")
+                #feature_file_TRAIN.write("0, 1, 0, 0, 0, 0, 0, 0, 0, 0\n")
+            elif (label == 2):
+                feature_file_TRAIN.write("2\n")
+                #feature_file_TRAIN.write("0, 0, 1, 0, 0, 0, 0, 0, 0, 0\n")
+            elif (label == 3):
+                feature_file_TRAIN.write("3\n")
+                #feature_file_TRAIN.write("0, 0, 0, 1, 0, 0, 0, 0, 0, 0\n")
+            elif (label == 4):
+                feature_file_TRAIN.write("4\n")
+                #feature_file_TRAIN.write("0, 0, 0, 0, 1, 0, 0, 0, 0, 0\n")
+            elif (label == 5):
+                feature_file_TRAIN.write("5\n")
+                #feature_file_TRAIN.write("0, 0, 0, 0, 0, 1, 0, 0, 0, 0\n")
+            elif (label == 6):
+                feature_file_TRAIN.write("6\n")
+                #feature_file_TRAIN.write("0, 0, 0, 0, 0, 0, 1, 0, 0, 0\n")
+            elif (label == 7):
+                feature_file_TRAIN.write("7\n")
+                #feature_file_TRAIN.write("0, 0, 0, 0, 0, 0, 0, 1, 0, 0\n")
+            elif (label == 8):
+                feature_file_TRAIN.write("8\n")
+                #feature_file_TRAIN.write("0, 0, 0, 0, 0, 0, 0, 0, 1, 0\n")
+            elif (label == 9):
+                feature_file_TRAIN.write("9\n")
+                #feature_file_TRAIN.write("0, 0, 0, 0, 0, 0, 0, 0, 0, 1\n")
+            i += 1   
+        feature_file_TRAIN.close()
+
+
     print("Doing feature extraction on test images")
+    feature_file_TEST = open('image_features_TEST.txt', 'w')
     i = 0
     for image in total_test_images:
         features = featureExtraction(image)
@@ -190,7 +194,6 @@ def main():
             #feature_file_TRAIN.write("0, 0, 0, 0, 0, 0, 0, 0, 0, 1\n")
         i += 1  
     
-    feature_file_TRAIN.close()
     feature_file_TEST.close()
     return total_test_labels
 
