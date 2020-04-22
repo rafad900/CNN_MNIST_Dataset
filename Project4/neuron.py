@@ -19,15 +19,10 @@ class Neuron:
 
     def prepare(self):
         ''' Just getting things ready, opening files and setting variables'''
-        if (os.path.exists('seven_and_nine_features_TRAIN.txt') and os.path.exists('seven_and_nine_features_TEST.txt')):
-            print("\nIt found the file ")
-            self.feature_file_TRAIN = open('seven_and_nine_features_TRAIN.txt', 'r')
-            self.feature_file_TEST = open('seven_and_nine_features_TEST.txt', 'r')
-        else:
-            print("\nIt did not find the file, calling main from featureSelection.py")
-            self.target_labels = main()
-            self.feature_file_TRAIN = open('seven_and_nine_features_TRAIN.txt', 'r')
-            self.feature_file_TEST = open('seven_and_nine_features_TEST.txt', 'r')
+        print("\nCreating the feature files. \n")
+        self.target_labels = main()
+        self.feature_file_TRAIN = open('seven_and_nine_features_TRAIN.txt', 'r')
+        self.feature_file_TEST = open('seven_and_nine_features_TEST.txt', 'r')
         for i in range(7):
             self.weights.append(random.uniform(-0.1, 0.1))
         print("These are the starting weights: ", end='')
@@ -75,6 +70,8 @@ class Neuron:
         prediction_vector = [] 
         i = 0
         Correct_count = 0
+        print ("This the size of the target labels: ")
+        print(len(self.target_labels))
         for line in self.feature_file_TEST:
             features = line.split(',')
             result = self.predict(features)

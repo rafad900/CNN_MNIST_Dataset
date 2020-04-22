@@ -3,6 +3,9 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+# THIS IS JUST EXPERIMENTAL STUFF 
+# NOT ACTUAL PART OF THE PROJECT
+
 data = pd.read_csv('Project4_Data_set/train0.csv')
 headers = data.columns.values
 
