@@ -108,14 +108,14 @@ def main():
         total_test_images += test_i
         total_test_labels += test_l
 
-    feature_file_TRAIN = open('seven_and_nine_features_TRAIN.txt', 'w')
-    feature_file_TEST = open('seven_and_nine_features_TEST.txt', 'w')
+    feature_file_TRAIN = open('image_features_TRAIN.txt', 'w')
+    feature_file_TEST = open('image_features_TEST.txt', 'w')
     print("Doing feature extraction on training images")
     i = 0
     for image in total_images:
         features = featureExtraction(image)
+        feature_file_TRAIN.write("-1, ")
         for f in features:
-            feature_file_TRAIN.write("-1,")
             feature_file_TRAIN.write("%s, " % str(f))
         label = total_labels[i]
         if (label == 0):
@@ -154,8 +154,8 @@ def main():
     i = 0
     for image in total_test_images:
         features = featureExtraction(image)
+        feature_file_TEST.write("-1, ")
         for f in features:
-            feature_file_TEST.write("-1,")
             feature_file_TEST.write("%s, " % str(f))
         label = total_test_labels[i]
         if (label == 0):

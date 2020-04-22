@@ -1,4 +1,4 @@
-from featureSelection import main
+from featureselection2 import main
 import os
 import random
 import math
@@ -28,8 +28,8 @@ class MLP:
         self.output_derivative_values = []
         self.hidden_derivative_values = []
 
-        self.hidden_weights = [[]]
-        self.input_weights = [[]]
+        self.hidden_weights = [[],[],[],[],[],[],[],[],[],[]]
+        self.input_weights  = [[],[],[],[],[],[],[],[],[],[],[]]
 
         self.inputs = []
 
@@ -40,15 +40,19 @@ class MLP:
         ''' Just getting things ready, opening files and setting variables'''
         print("\nCreating the features files. \n")
         self.target_labels = main()
-        self.feature_file_TRAIN = open('seven_and_nine_features_TRAIN.txt', 'r')
-        self.feature_file_TEST = open('seven_and_nine_features_TEST.txt', 'r')
-        for i in range(7):
-            self.output_weights.append(random.uniform(-0.1, 0.1))
-            self.input_weights.append(random.uniform(-0.1, 0.1))
-        for i in range(self.num_input):
-            for j in range(self.num_hidden):
-                self.input_weights
+        self.feature_file_TRAIN = open('image_features_TRAIN.txt', 'r')
+        self.feature_file_TEST = open('image_features_TEST.txt', 'r')
+        
+        for i in range(self.num_hidden):
+            for j in range(self.num_input):
+                self.input_weights[i].append(random.uniform(-0.1, 0.1))
 
+        for i in range(self.num_output):
+            for j in range(self.num_hidden):
+                self.hidden_weights[i].append(random.uniform(-0.1, 0.1))
+
+    # The following functions are all just equations such as the derivatives or the sigmoid 
+    # along with the logic required to update the weights.
     def derivative_output_error(self, prediction_y, target_t):
         return ((prediction_y - target_t) * prediction_y * (1 - prediction_y))
 
@@ -80,30 +84,48 @@ class MLP:
     def sigmoid_function(self, value):
         return 1 / (1 + math.exp(-1 * value))
         
+    '''def print_weights(self):
+        print("These are the weights every 100 epochs: ")
+        print("These are the weights of the inputs:                            These are the weights of the hidden layer:")
+        for x in range(self.ad)'''
+    
+    # Calls the prediction function to begin the process of training the weights
+    # Only trains if the prediction was wrong otherwise, continue
     def train(self):
         for a in range(1000): # 1000 epochs according to pdf
-            if (a%100 == 0):
-                print("These are the weigths every 100 epochs: ", end='')
-                print(self.weights)
+            
+            if (a%100 == 0): #Do we really need to print out the weights? There is about 180 weights total. It would be overwhelming unless you can think of a smart way to show them 
+                print("100 epochs passed")
             for line in self.feature_file_TRAIN:
 
                 features = line.split(',')
+                features = [float(x) for x in features]
+
                 self.predict(features)
+                self.inputs = features[0:7]
 
-                targets = [features[7], features[8], features[9], features[10], features[11], features[12],
-                    features[13], features[14], features[15], features[16]]
+                target = features[-1]
 
+                passed_iteration = False
                 for x in range(len(self.output_of_output)):
-                    if (self.output_of_output[x] != targets[x]): 
-                        self.back_propagate()
+                    if (self.output_of_output[x] == 1):
+                        if (x == target):
+                            passed_iteration = True
+                        else:
+                            passed_iteration = False
+
+                if (not passed_iteration):
+                    self.back_propagate()
             self.feature_file_TRAIN.seek(0)
 
+    # Begins the prediction. Calculates the sum of the inputs from input and 
+    # hidden layers and save the outputs into lists that will be used for back propagation
     def predict(self, features):
         ''' Does the input times weight calculation for all inputs on the neuron'''
         input_sums = []
-        for h in range(len(self.num_hidden)):
+        for i in range((self.num_input)):
             sum = 0
-            for i in range(len(self.input_weights[h])):
+            for h in range((self.num_hidden)):
                 sum += features[i] * self.input_weights[h][i]
             input_sums.append(sum)
         
@@ -112,25 +134,28 @@ class MLP:
             self.output_of_hidden.append(self.sigmoid_function(each_sum))
         
         hidden_sums = []
-        for o in range(len(self.num_output)):
+        for h in range((self.num_input)):
             sum = 0
-            for i in range(len(self.hidden_weights[o])):
-                sum += self.output_of_hidden[o] * self.hidden_weights[o][i]
+            for o in range((self.num_output)):
+                sum += self.output_of_hidden[h] * self.hidden_weights[o][h]
             hidden_sums.append(sum)
         
         self.output_of_output = []
         for each_sum in hidden_sums:
             self.output_of_output.append(self.sigmoid_function(each_sum))
  
-
+    # This function first calculates the derivative values from the output and hidden layers 
+    # then uses those values to update the weights
     def back_propagate(self, targets):
-        self.output_derivative_values = []
-        for x in range(len(self.num_output)):
-            derived_value = self.derivative_output_error(self.output_of_output[x], targets[x])
+        self.output_derivative_values = [] #Clear the lists 
+        for x in range((self.num_output)):
+            derived_value = self.derivative_output_error(self.output_of_output[x], targets[x]) # I NEED TO TELL IT THE TARGETS FOR EACH OF THE 10 NEURONS
+
+            
             self.output_derivative_values.append(derived_value)
         
         self.hidden_derivative_values = []
-        for x in range(len(self.num_hidden)):
+        for x in range((self.num_hidden)):
             derived_value = self.derivative_hidden_error(self.output_of_hidden[x], self.hidden_weights[x])
             self.hidden_derivative_values.append(derived_value)
 
@@ -138,23 +163,40 @@ class MLP:
 
         self.adjust_input_weights()
     
+    # Begins the testing phase of the program. 
+    # Not much else to say 
     def test(self):
-        ''' Begins the test, similar to train, except you don't adjust weights if it gets it wrong'''
+        print("\nBeginning the tests")
         prediction_vector = [] 
         Correct_count = 0
         pos = 0
         for line in self.feature_file_TEST:
             features = line.split(',')
+            features = [float(x) for x in features]
             self.predict(features)
-            index = self.output_of_output.index(1)
-            prediction_vector.append(index)
-            if (index == self.target_labels[pos]):
+
+            target = features[-1]
+            result = target
+            correct = True
+
+            for x in range(len(self.output_of_output)):
+                if (self.output_of_output[x] == 1):
+                    if (x == target):
+                        continue
+                    else:
+                        correct = False
+                        result = x
+
+            prediction_vector.append(result)
+
+            if (correct):
                 Correct_count += 1
-            pos += 1
+
         self.create_test_result_file(prediction_vector)
         print("Success Ratio: ", round(Correct_count/(len(prediction_vector)), 2))
 
-    
+    # Creates the output file 
+    # after the tests
     def create_test_result_file(self, vector):
         print("\n\nCreating new file that will contain predicted labels seperated by space\n")
         test_predictions = open("test_prediction.txt", 'w')
