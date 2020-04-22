@@ -142,13 +142,15 @@ class MLP:
         ''' Begins the test, similar to train, except you don't adjust weights if it gets it wrong'''
         prediction_vector = [] 
         Correct_count = 0
+        pos = 0
         for line in self.feature_file_TEST:
             features = line.split(',')
             self.predict(features)
             index = self.output_of_output.index(1)
             prediction_vector.append(index)
-            if (index == features[17]):
+            if (index == self.target_labels[pos]):
                 Correct_count += 1
+            pos += 1
         self.create_test_result_file(prediction_vector)
         print("Success Ratio: ", round(Correct_count/(len(prediction_vector)), 2))
 
