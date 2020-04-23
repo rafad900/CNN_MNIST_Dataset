@@ -103,11 +103,19 @@ def main():
     total_test_labels = []
     for x in randomize:
         labels, images = open_images("Project4_Data_set/train" + str(x) + ".csv")
-        test_l, test_i = open_images("Project4_Data_set/valid" + str(x) + ".csv")
         total_images += images
         total_labels += labels  
+
+    c = list(zip(total_images, total_labels))
+    random.shuffle(c)
+    total_images, total_labels = zip(*c)
+
+    random.shuffle(randomize)
+    for x in randomize:
+        test_l, test_i = open_images("Project4_Data_set/valid" + str(x) + ".csv")
         total_test_images += test_i
         total_test_labels += test_l
+
 
     if (not os.path.exists("image_features_TRAIN.txt")):
         feature_file_TRAIN = open('image_features_TRAIN.txt', 'w')

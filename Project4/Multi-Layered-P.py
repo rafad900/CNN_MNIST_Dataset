@@ -35,29 +35,27 @@ class MLP:
                 self.input_weights[i].append(random.uniform(-0.1, 0.1))
 
     def adjust_input_weights(self, targets):
-        randomized = []
+        '''randomized = []
         for i in range((self.num_output)):
             randomized.append(i)
-        random.shuffle(randomized)
-        for i in randomized:
+        random.shuffle(randomized)'''
+        for i in range((self.num_output)):
             for k in range(len(self.input_weights[i])):
+                if (targets[i] == self.output_of_output[i]):
+                    continue 
                 self.input_weights[i][k] = self.input_weights[i][k] - (self.learning_rate * (self.output_of_output[i] - targets[i]) * self.inputs[k]) # THIS MIGHT BE OFF BY THE inputs[k]  
-
-    def activation_function(self, value):
-        if value <= 0:
-            return 0
-        if value > 0:
-            return 1
     
     def create_all_targets(self, target):
         targets = [0,0,0,0,0,0,0,0,0,0]  # One value for each of the ouput neurons 
         targets[int(target)] = 1
         return targets
 
-    def print_weights(self):
-        print("100 epochs passed, each line is an input neuron: ")
-        for neuron in self.input_weights:
-            print(neuron)
+    def print_weights(self, value):
+        print("{} epochs passed, each line is an output neuron with weights from each of the 7 inputs: ".format(str(value)))
+        for x in range(len(self.input_weights)):
+            print("Output  %i Weights: " % (x), end='')
+            print(self.input_weights[x])
+        print("------------------------------------------------------------------------------------------------")
 
     # Calls the prediction function to begin the process of training the weights
     # Only trains if the prediction was wrong otherwise, continue
@@ -66,7 +64,7 @@ class MLP:
         for a in range(1000): # 1000 epochs according to pdf
             
             if (a%100 == 0): #Do we really need to print out the weights? Theres about 70 of them. Can you think of a smart way to do it?
-                self.print_weights()
+                self.print_weights(a)
             for line in self.feature_file_TRAIN:
 
                 features = line.split(',')
@@ -78,10 +76,11 @@ class MLP:
                 target = features[-1]
                 all_targets = self.create_all_targets(target)
 
-                passed_iteration = True
+                passed_iteration = False
                 for x in range(len(self.output_of_output)):
                     if (self.output_of_output[x] == 1):
                         if (x == target):
+                            passed_iteration = True
                             continue
                         else:
                             passed_iteration = False # If the incorrect index of the output list is activated, the it did not pass
@@ -104,7 +103,10 @@ class MLP:
         
         self.output_of_output = []
         for each_sum in input_sums:
-            self.output_of_output.append(self.activation_function(each_sum))
+            if (each_sum <= 0):
+                self.output_of_output.append(0)
+            else:
+                self.output_of_output.append(1)
     
     # Begins the testing phase of the program. 
     # Not much else to say 
@@ -120,16 +122,17 @@ class MLP:
 
             target = features[-1]
             result = target
-            correct = True
+            correct = False
 
             for x in range(len(self.output_of_output)):
                 if (self.output_of_output[x] == 1):
                     if (x == target):
-                        continue
+                        correct = True
                     else:
-                        correct = False
                         result = x
 
+            '''print(self.output_of_output, target)
+            input()'''
             prediction_vector.append(result)
 
             if (correct):
