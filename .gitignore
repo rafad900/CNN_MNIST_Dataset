@@ -5,3 +5,5 @@ __pycache__
 seven_and_nine_features_TEST.txt
 seven_and_nine_features_TRAIN.txt
 test_prediction.txt
+image_features_TEST.txt
+image_features_TRAIN.txt
