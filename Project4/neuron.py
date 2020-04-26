@@ -13,6 +13,8 @@ class Neuron:
         self.threshold = 0
         self.test_file = 0
         self.target_labels = []
+        self.lowest_error_weights = []
+        self.success_ratio = 0
 
     def prepare(self):
         ''' Just getting things ready, opening files and setting variables'''
@@ -31,6 +33,11 @@ class Neuron:
             if (a%100 == 0):
                 print("These are the weigths every 100 epochs: ", end='')
                 print(self.weights)
+                ratio = self.test()
+                if (ratio > self.success_ratio):
+                    self.success_ratio = ratio
+                    self.lowest_error_weights = self.weights
+
             for line in self.feature_file_TRAIN:
                 features = line.split(',')
                 result = self.predict(features)
@@ -39,6 +46,7 @@ class Neuron:
             #print("These are the weights at the end of iteration: ", end='')
             #print(self.weights)                    DEBUGGING PURPOSES
             self.feature_file_TRAIN.seek(0)
+        self.weights = self.lowest_error_weights
 
         
     def adjust_weights(self, result, features):
@@ -64,31 +72,29 @@ class Neuron:
     
     def test(self):
         ''' Begins the test, similar to train, except you don't adjust weights if it gets it wrong'''
-        prediction_vector = [] 
+        self.prediction_vector = [] 
         i = 0
         Correct_count = 0
-        print ("This the size of the target labels: ")
-        print(len(self.target_labels))
         for line in self.feature_file_TEST:
             features = line.split(',')
             result = self.predict(features)
             if (result == 0):
-                prediction_vector.append('7')
+                self.prediction_vector.append('7')
                 if (self.target_labels[i] == 7):
                     Correct_count+=1
             else:
-                prediction_vector.append('9')
+                self.prediction_vector.append('9')
                 if (self.target_labels[i] == 9):
                     Correct_count+=1
             i+=1
-        self.create_test_result_file(prediction_vector)
-        print("Success Ratio: ", round(Correct_count/(len(prediction_vector)), 2))
+        self.feature_file_TEST.seek(0)
+        return round(Correct_count/(len(self.prediction_vector)), 2)
 
     
-    def create_test_result_file(self, vector):
+    def create_test_result_file(self):
         print("\n\nCreating new file that will contain predicted labels seperated by space\n")
         test_predictions = open("test_prediction.txt", 'w')
-        for v in vector:
+        for v in self.prediction_vector:
             test_predictions.write("%s " % v)
         test_predictions.close()
 
@@ -99,4 +105,8 @@ if __name__=='__main__':
     neuron = Neuron()
     neuron.prepare()
     neuron.train()
-    neuron.test()
+    print("Beginning tests")
+    ratio = neuron.test()
+    neuron.create_test_result_file()
+    print("Success Ratio: ", ratio)
+

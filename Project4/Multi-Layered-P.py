@@ -16,9 +16,10 @@ class MLP:
         # Weights, values, and others 
         self.output_of_output = []
 
-        self.input_weights  = [[],[],[],[],[],[],[],[],[],[]]
-
+        self.input_weights = [[],[],[],[],[],[],[],[],[],[]]
+        self.lowest_error_weights  = [[],[],[],[],[],[],[],[],[],[]]
         self.inputs = []
+        self.success_ration = 0
 
         self.target_labels = []
         self.learning_rate = 0.1
@@ -65,8 +66,13 @@ class MLP:
             
             if (a%100 == 0): #Do we really need to print out the weights? Theres about 70 of them. Can you think of a smart way to do it?
                 self.print_weights(a)
+                ratio = self.test()
+                if (ratio > self.success_ration):
+                    self.success_ration = ratio
+                    self.lowest_error_weights = self.input_weights
+            
             for line in self.feature_file_TRAIN:
-
+                
                 features = line.split(',')
                 features = [float(x) for x in features]
 
@@ -85,10 +91,14 @@ class MLP:
                         else:
                             passed_iteration = False # If the incorrect index of the output list is activated, the it did not pass
                             break
-
+                
                 if (not passed_iteration):
                     self.adjust_input_weights(all_targets)
+                
             self.feature_file_TRAIN.seek(0)
+        
+        self.input_weights = self.lowest_error_weights
+
 
     # Begins the prediction. Calculates the sum of the inputs from input and 
     # hidden layers and save the outputs into lists that will be used for back propagation
@@ -111,8 +121,7 @@ class MLP:
     # Begins the testing phase of the program. 
     # Not much else to say 
     def test(self):
-        print("\nBeginning the tests")
-        prediction_vector = [] 
+        self.prediction_vector = [] 
         Correct_count = 0
         pos = 0
         for line in self.feature_file_TEST:
@@ -131,22 +140,20 @@ class MLP:
                     else:
                         result = x
 
-            '''print(self.output_of_output, target)
-            input()'''
-            prediction_vector.append(result)
+            self.prediction_vector.append(result)
 
             if (correct):
                 Correct_count += 1
 
-        self.create_test_result_file(prediction_vector)
-        print("Success Ratio: ", round(Correct_count/(len(prediction_vector)), 2))
+        self.feature_file_TEST.seek(0)
+        return round(Correct_count/(len(self.prediction_vector)), 2)
 
     # Creates the output file 
     # after the tests
-    def create_test_result_file(self, vector):
+    def create_test_result_file(self ):
         print("\n\nCreating new file that will contain predicted labels seperated by space\n")
         test_predictions = open("test_prediction.txt", 'w')
-        for v in vector:
+        for v in self.prediction_vector:
             test_predictions.write("%s " % v)
         test_predictions.close()
 
@@ -157,4 +164,8 @@ if __name__=='__main__':
     neuron = MLP()
     neuron.prepare()
     neuron.train()
-    neuron.test()
+    print("\nBeginning the tests")
+    ratio = neuron.test()
+    neuron.create_test_result_file()
+    print("Best success Ratio: ", ratio)
+
