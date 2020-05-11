@@ -1,2 +1,6 @@
 data_set
 *.csv
+*.swp
+.DS_Store
+*TEST*
+*TRAIN*
