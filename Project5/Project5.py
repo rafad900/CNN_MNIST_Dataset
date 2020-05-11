@@ -204,8 +204,13 @@ class CNN:
 
     def derivatives_of_hidden(self, classifications):
         self.derived_values_hidden = []
-        for i in range(len(self.W5_weights)):
-            return 0
+        sum = 0
+        for x in range(len(self.W0_weights)):
+            for y in range(len(self.W0_weights[x])):
+                sum += self.W0_weights[x][y] * self.derived_values_output[y]
+            
+            
+        
 
     def train(self):
         # Do the training operations
