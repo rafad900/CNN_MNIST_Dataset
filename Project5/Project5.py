@@ -1,7 +1,6 @@
 import numpy as np
 import copy, random, os, pandas as pd
 import matplotlib.pyplot as plt
-from PIL import Image
 
 class CNN:
     def __init__(self):
@@ -14,8 +13,11 @@ class CNN:
         self.labels = []
         self.derived_values_output = []
         self.derived_values_hidden = []
-		self.values_of_hidden = []
-		self.values_of_output = []
+        self.values_of_hidden = []
+        self.values_of_output = []
+        self.best_W0_weights = []
+        self.best_W5_weights = []
+        self.best_correct_count = 0
     
     def setup(self):
         # Set up the filter values
@@ -164,14 +166,14 @@ class CNN:
         if row != 1 or column != 2000:
             print ("There was an error with the shape of the matrix after reshape")
             exit(1)
-        hidden_node_values = matrix * self.W5_weights
+        hidden_node_values = matrix.dot( self.W5_weights)
         return hidden_node_values
 
     def second_RELU(self, matrix):
         # Get rid of negative values in the 1 by 100 matrix
         new_matrix = []
         matrix = matrix.tolist()
-        for x in matrix:
+        for x in matrix[0]:
             if x < 0:
                 new_matrix.append(0)
             else:
@@ -181,7 +183,7 @@ class CNN:
     def multiply_by_output(self, matrix):
         # Multiply the values of hidden layer by wieghts of output layer
         matrix = np.array(matrix)
-        output_of_output = matrix * self.W0_weights
+        output_of_output = matrix.dot( self.W0_weights)
         return output_of_output
 
     def soft_max(self, matrix):
@@ -194,11 +196,10 @@ class CNN:
     
     def back_propagation(self, classifications, expected, output_of_hidden, output_of_reshape):
         # Begin the back propagation, only W5 AND W0 change, not the filters
-        self.derivative_of_output(classifications, expected)
-		self.derivative_of_hidden(classifications)
-		self.update_output_weights(output_of_hidden)
-		self.update_hidden_weights(output_of_reshape)
-        return 0
+        self.derivatives_of_output(classifications, expected)
+        self.derivatives_of_hidden(classifications)
+        self.update_output_weights(output_of_hidden)
+        self.update_hidden_weights(output_of_reshape)
 
     def derivatives_of_output(self, classifications, expected):
         self.derived_values_output = []
@@ -209,23 +210,24 @@ class CNN:
 
     def derivatives_of_hidden(self, classifications):
         self.derived_values_hidden = []
-        sum = 0
+        summation = 0
         for x in range(len(self.W0_weights)):
             for y in range(len(self.W0_weights[x])):
                 summation += self.W0_weights[x][y] * self.derived_values_output[y]
-			self.derived_values_hidden.append(classiciations[y] * (1 - classifications[y]) * summation)
-	
-	def update_output_weights(self, output_of_hidden):
-		# This updates the weights for the output layer
-		for x in len(self.W0_weights):
-			for y in len(self.W0_weights):
-				self.W0_weights[x][y] = self.W0_weights[x][y] - self.learning_rate * self.derived_values_output[y] * output_of_hidden[x]
-	
-	def update_hidden_weights(self, output_of_reshape):
-		# This updates the weights for the hidden layer
-		for x in range(self.W5_weights):
-			for y in len(self.W5_weights):
-				self.W5_weights[x][y] = self.W5_weights[x][y] - self.learning_rate * self.derived_values_hidden[y] * output_of_reshape[x] 
+            self.derived_values_hidden.append(classifications[y] * (1 - classifications[y]) * summation)
+    
+    def update_output_weights(self, output_of_hidden):
+        # This updates the weights for the output layer
+        for x in range(len(self.W0_weights)):
+            for y in range(len(self.W0_weights[x])):
+                temp = self.learning_rate * self.derived_values_output[y] * output_of_hidden[0][x]
+                self.W0_weights[x][y] = self.W0_weights[x][y] - temp
+    
+    def update_hidden_weights(self, output_of_reshape):
+        # This updates the weights for the hidden layer
+        for x in range(len(self.W5_weights)):
+            for y in range(len(self.W5_weights[x])):
+                self.W5_weights[x][y] = self.W5_weights[x][y] - self.learning_rate * self.derived_values_hidden[y] * output_of_reshape[0][x] 
 
     def train(self):
         # Do the training operations
@@ -257,21 +259,62 @@ class CNN:
             classification = self.soft_max(Output_layer_output)
 
             if (classification.index(max(classification)) != image[0]):
-				expected = [0] * 10
-				expected[image[0]] = 1
-                self.back_propagation(classification, expected, Hidden_layer_result, Reshape_result)
-
-            
-
-        retur 0
+                expected = [0] * 10
+                expected[image[0]] = 1
+                self.back_propagation(classification, expected, Hidden_layer_result, Reshape_result) 
 
     def test(self):
         # Do the test operations
-        return 0
+        correct_count = 0
+        for image in self.TEST:
+            convo_result = []
+            stride = []
+            result = []
+            for i in range(20):
+                result.append(0.0)
+            for i in range(20):
+                stride.append(copy.deepcopy(result))
+            for i in range(20):
+                convo_result.append(copy.deepcopy(stride))
+
+            self.convo(image, convo_result)
+
+            RELU_result = self.RELU(convo_result)
+
+            Pool_result = self.pool(RELU_result)
+
+            Reshape_result = self.reshape(Pool_result)
+
+            Hidden_layer_result  = self.multiply_by_hidden(Reshape_result)
+
+            Second_RELU_output = self.second_RELU(Hidden_layer_result)
+
+            Output_layer_output = self.multiply_by_output(Second_RELU_output)
+
+            classification = self.soft_max(Output_layer_output)
+
+            if (classification.index(max(classification)) == image[0]):
+                correct_count += 1
+
+        if correct_count > self.best_correct_count:
+            self.best_correct_count = correct_count/9000
+            self.best_W0_weights = self.W0_weights
+            self.best_w5_weights = self.W5_weights  
+
+    def epochs(self):
+        N = input("How many epochs should be run (must be a number): ")
+        for x in range(int(N)):
+            self.train() 
+            self.test()
+    
+    def final_results(self):
+        print("The best network had a success ration of: %f" % self.best_correct_count)
+        
 
 
 if __name__=='__main__':
 
     cnn = CNN()
     cnn.setup()
-    cnn.train()
+    cnn.epochs()
+    cnn.final_results()
