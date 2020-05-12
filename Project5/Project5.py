@@ -14,6 +14,8 @@ class CNN:
         self.labels = []
         self.derived_values_output = []
         self.derived_values_hidden = []
+		self.values_of_hidden = []
+		self.values_of_output = []
     
     def setup(self):
         # Set up the filter values
@@ -190,9 +192,12 @@ class CNN:
             classification_percent.append(e/ total)
         return classification_percent
     
-    def back_propagation(self, classifications, expected):
+    def back_propagation(self, classifications, expected, output_of_hidden, output_of_reshape):
         # Begin the back propagation, only W5 AND W0 change, not the filters
         self.derivative_of_output(classifications, expected)
+		self.derivative_of_hidden(classifications)
+		self.update_output_weights(output_of_hidden)
+		self.update_hidden_weights(output_of_reshape)
         return 0
 
     def derivatives_of_output(self, classifications, expected):
@@ -207,10 +212,20 @@ class CNN:
         sum = 0
         for x in range(len(self.W0_weights)):
             for y in range(len(self.W0_weights[x])):
-                sum += self.W0_weights[x][y] * self.derived_values_output[y]
-            
-            
-        
+                summation += self.W0_weights[x][y] * self.derived_values_output[y]
+			self.derived_values_hidden.append(classiciations[y] * (1 - classifications[y]) * summation)
+	
+	def update_output_weights(self, output_of_hidden):
+		# This updates the weights for the output layer
+		for x in len(self.W0_weights):
+			for y in len(self.W0_weights):
+				self.W0_weights[x][y] = self.W0_weights[x][y] - self.learning_rate * self.derived_values_output[y] * output_of_hidden[x]
+	
+	def update_hidden_weights(self, output_of_reshape):
+		# This updates the weights for the hidden layer
+		for x in range(self.W5_weights):
+			for y in len(self.W5_weights):
+				self.W5_weights[x][y] = self.W5_weights[x][y] - self.learning_rate * self.derived_values_hidden[y] * output_of_reshape[x] 
 
     def train(self):
         # Do the training operations
@@ -242,10 +257,13 @@ class CNN:
             classification = self.soft_max(Output_layer_output)
 
             if (classification.index(max(classification)) != image[0]):
-                self.back_propagation(classification)
+				expected = [0] * 10
+				expected[image[0]] = 1
+                self.back_propagation(classification, expected, Hidden_layer_result, Reshape_result)
+
             
 
-        return 0
+        retur 0
 
     def test(self):
         # Do the test operations
