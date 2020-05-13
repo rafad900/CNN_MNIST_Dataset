@@ -18,6 +18,8 @@ class CNN:
         self.best_W0_weights = []
         self.best_W5_weights = []
         self.best_correct_count = 0
+        self.W5_bias_weights = []
+        self.W0_bias_weights = []
     
     def setup(self):
         # Set up the filter values
@@ -55,6 +57,8 @@ class CNN:
 
         # Set up the images 
         self.TRAIN, self.TEST = self.extract_images()
+        self.TRAIN = self.TRAIN[0:100]
+        self.TEST = self.TEST[0:100]
 
         # Give random values to the weights
         for x in range(2000):
@@ -68,6 +72,12 @@ class CNN:
             for y in range(10):
                 self.W0_weights[x].append(random.uniform(-1.0, 1.0))
         self.W0_weights = np.array(self.W0_weights)
+
+        for x in range(100):
+            self.W5_bias_weights.append(random.uniform(-1.0, 1.0))
+
+        for x in range(10):
+            self.W0_bias_weights.append(random.uniform(-1.0, 1.0))
         
 
     def open_images(self, path):
@@ -167,6 +177,10 @@ class CNN:
             print ("There was an error with the shape of the matrix after reshape")
             exit(1)
         hidden_node_values = matrix.dot( self.W5_weights)
+        temp = hidden_node_values.tolist()
+        for x in range(len(temp[0])):
+            temp[0][x] += 1 * self.W5_bias_weights[x]
+        hidden_node_values = np.array(temp)
         return hidden_node_values
 
     def second_RELU(self, matrix):
@@ -184,6 +198,10 @@ class CNN:
         # Multiply the values of hidden layer by wieghts of output layer
         matrix = np.array(matrix)
         output_of_output = matrix.dot( self.W0_weights)
+        temp = output_of_output.tolist()
+        for x in range(len(temp)):
+            temp[x] += 1 * self.W0_bias_weights[x]
+        output_of_output = np.array(temp)
         return output_of_output
 
     def soft_max(self, matrix):
@@ -222,6 +240,9 @@ class CNN:
             for y in range(len(self.W0_weights[x])):
                 temp = self.learning_rate * self.derived_values_output[y] * output_of_hidden[0][x]
                 self.W0_weights[x][y] = self.W0_weights[x][y] - temp
+
+        for x in range(len(self.W0_bias_weights)):
+            self.W0_bias_weights[x] = self.W0_bias_weights[x] - self.learning_rate * self.derived_values_output[x] * output_of_hidden[0][x]
     
     def update_hidden_weights(self, output_of_reshape):
         # This updates the weights for the hidden layer
@@ -229,19 +250,28 @@ class CNN:
             for y in range(len(self.W5_weights[x])):
                 self.W5_weights[x][y] = self.W5_weights[x][y] - self.learning_rate * self.derived_values_hidden[y] * output_of_reshape[0][x] 
 
+        for x in range(len(self.W5_bias_weights)):
+            self.W5_bias_weights[x] = self.W5_bias_weights[x] - self.learning_rate * self.derived_values_hidden[x] * output_of_reshape[0][x]
+
     def train(self):
         # Do the training operations
-        for image in self.TRAIN:
-            convo_result = []
-            stride = []
-            result = []
-            for i in range(20):
-                result.append(0.0)
-            for i in range(20):
-                stride.append(copy.deepcopy(result))
-            for i in range(20):
-                convo_result.append(copy.deepcopy(stride))
 
+        image_count = 0
+        convo_result = []
+        stride = []
+        result = []
+        for i in range(20):
+            result.append(0.0)
+        for i in range(20):
+            stride.append(copy.deepcopy(result))
+        for i in range(20):
+            convo_result.append(copy.deepcopy(stride))
+
+        for image in self.TRAIN:
+
+            if (image_count % 10 == 0):
+                print("\nIt has processed 100 images\nThere are %i left" % (len(self.TRAIN) - image_count))
+            image_count += 1
             self.convo(image, convo_result)
 
             RELU_result = self.RELU(convo_result)
@@ -266,17 +296,23 @@ class CNN:
     def test(self):
         # Do the test operations
         correct_count = 0
-        for image in self.TEST:
-            convo_result = []
-            stride = []
-            result = []
-            for i in range(20):
-                result.append(0.0)
-            for i in range(20):
-                stride.append(copy.deepcopy(result))
-            for i in range(20):
-                convo_result.append(copy.deepcopy(stride))
+        image_count = 0
 
+        convo_result = []
+        stride = []
+        result = []
+        for i in range(20):
+            result.append(0.0)
+        for i in range(20):
+            stride.append(copy.deepcopy(result))
+        for i in range(20):
+            convo_result.append(copy.deepcopy(stride))
+
+        for image in self.TEST:
+            
+            if (image_count % 100 == 0):
+                print("It has processes 100 images\nThere are %i left" % (len(self.TEST) - image_count))
+            image_count = 1
             self.convo(image, convo_result)
 
             RELU_result = self.RELU(convo_result)
@@ -297,9 +333,9 @@ class CNN:
                 correct_count += 1
 
         if correct_count > self.best_correct_count:
-            self.best_correct_count = correct_count/9000
+            self.best_correct_count = correct_count/(len(self.TEST))
             self.best_W0_weights = self.W0_weights
-            self.best_w5_weights = self.W5_weights  
+            self.best_w5_weights = self.W5_weights
 
     def epochs(self):
         N = input("How many epochs should be run (must be a number): ")
