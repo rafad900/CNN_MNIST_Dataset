@@ -1,6 +1,24 @@
 import numpy as np
 import copy, random, os, pandas as pd
 import matplotlib.pyplot as plt
+import warnings
+
+'''def handle_warning(message, category, filename, lineno, file=None, line=None):
+    print('A warning occurred:')
+    print(message)
+    print('Do you wish to continue?')
+
+    while True:
+        response = input('y/n: ').lower()
+        if response not in {'y', 'n'}:
+            print('Not understood.')
+        else:
+            break
+
+    if response == 'n':
+        raise category(message)
+
+warnings.showwarning = handle_warning'''            # THIS IS FOR DEBUGGING PURPOSES
 
 class CNN:
     def __init__(self):
@@ -81,7 +99,7 @@ class CNN:
         
 
     def open_images(self, path):
-        print("Opening and extracting images")
+        print("Opening and extracting images from: " + path)
         images = []
         data = pd.read_csv(path)
 
@@ -92,7 +110,8 @@ class CNN:
 
     def extract_images(self):
         #randomize = [1,2,3,4,5,6,7,8,9]
-        randomize = [0]
+        #randomize = [0]
+        randomize = [0, 1, 5]
         random.shuffle(randomize)
         total_images = []
         total_test_images = []
@@ -215,7 +234,7 @@ class CNN:
     def back_propagation(self, classifications, expected, output_of_hidden, output_of_reshape):
         # Begin the back propagation, only W5 AND W0 change, not the filters
         self.derivatives_of_output(classifications, expected)
-        self.derivatives_of_hidden(classifications)
+        self.derivatives_of_hidden(output_of_hidden)
         self.update_output_weights(output_of_hidden)
         self.update_hidden_weights(output_of_reshape)
 
@@ -226,13 +245,14 @@ class CNN:
             t = expected[i]
             self.derived_values_output.append( (y - t) * y * (1 - y))
 
-    def derivatives_of_hidden(self, classifications):
+    def derivatives_of_hidden(self, output_of_hidden):
         self.derived_values_hidden = []
         summation = 0
+        temp = output_of_hidden.tolist()
         for x in range(len(self.W0_weights)):
             for y in range(len(self.W0_weights[x])):
                 summation += self.W0_weights[x][y] * self.derived_values_output[y]
-            self.derived_values_hidden.append(classifications[y] * (1 - classifications[y]) * summation)
+            self.derived_values_hidden.append(temp[0][x] * (1 - temp[0][x]) * summation)
     
     def update_output_weights(self, output_of_hidden):
         # This updates the weights for the output layer
@@ -272,6 +292,7 @@ class CNN:
             if (image_count % 10 == 0):
                 print("\nIt has processed 100 images\nThere are %i left" % (len(self.TRAIN) - image_count))
             image_count += 1
+
             self.convo(image, convo_result)
 
             RELU_result = self.RELU(convo_result)
@@ -312,7 +333,7 @@ class CNN:
             
             if (image_count % 100 == 0):
                 print("It has processes 100 images\nThere are %i left" % (len(self.TEST) - image_count))
-            image_count = 1
+            image_count += 1
             self.convo(image, convo_result)
 
             RELU_result = self.RELU(convo_result)
