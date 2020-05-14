@@ -195,10 +195,10 @@ class CNN:
         if row != 1 or column != 2000:
             print ("There was an error with the shape of the matrix after reshape")
             exit(1)
-        hidden_node_values = matrix.dot( self.W5_weights)
+        hidden_node_values = matrix[0].dot( self.W5_weights)
         temp = hidden_node_values.tolist()
-        for x in range(len(temp[0])):
-            temp[0][x] += 1 * self.W5_bias_weights[x]
+        for x in range(len(temp)):
+            temp[x] += 1 * self.W5_bias_weights[x]
         hidden_node_values = np.array(temp)
         return hidden_node_values
 
@@ -206,7 +206,7 @@ class CNN:
         # Get rid of negative values in the 1 by 100 matrix
         new_matrix = []
         matrix = matrix.tolist()
-        for x in matrix[0]:
+        for x in matrix:
             if x < 0:
                 new_matrix.append(0)
             else:
@@ -252,13 +252,13 @@ class CNN:
         for x in range(len(self.W0_weights)):
             for y in range(len(self.W0_weights[x])):
                 summation += self.W0_weights[x][y] * self.derived_values_output[y]
-            self.derived_values_hidden.append(temp[0][x] * (1 - temp[0][x]) * summation)
+            self.derived_values_hidden.append(temp[x] * (1 - temp[x]) * summation)
     
     def update_output_weights(self, output_of_hidden):
         # This updates the weights for the output layer
         for x in range(len(self.W0_weights)):
             for y in range(len(self.W0_weights[x])):
-                temp = self.learning_rate * self.derived_values_output[y] * output_of_hidden[0][x]
+                temp = self.learning_rate * self.derived_values_output[y] * output_of_hidden[x]
                 self.W0_weights[x][y] = self.W0_weights[x][y] - temp
         
         print("This is the weights going to the ouput nodes")
@@ -269,7 +269,7 @@ class CNN:
         print()
         
         for x in range(len(self.W0_bias_weights)):
-            self.W0_bias_weights[x] = self.W0_bias_weights[x] - self.learning_rate * self.derived_values_output[x] * output_of_hidden[0][x]
+            self.W0_bias_weights[x] = self.W0_bias_weights[x] - self.learning_rate * self.derived_values_output[x] * output_of_hidden[x]
     
     def update_hidden_weights(self, output_of_reshape):
         # This updates the weights for the hidden layer
@@ -279,7 +279,7 @@ class CNN:
                 self.W5_weights[x][y] = self.W5_weights[x][y] - temp
 
         print("This is the weights going to the hidden nodes")
-        for y in self.W5_weights[0:3]:
+        for y in self.W5_weights[0:1]:
             for x in y:
                 print (x, end=" ")
             print()
