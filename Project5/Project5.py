@@ -75,8 +75,8 @@ class CNN:
 
         # Set up the images 
         self.TRAIN, self.TEST = self.extract_images()
-        self.TRAIN = self.TRAIN[0:100]
-        self.TEST = self.TEST[0:100]
+        self.TRAIN = self.TRAIN[0:10]
+        self.TEST = self.TEST[0:10]
 
         # Give random values to the weights
         for x in range(2000):
@@ -260,7 +260,14 @@ class CNN:
             for y in range(len(self.W0_weights[x])):
                 temp = self.learning_rate * self.derived_values_output[y] * output_of_hidden[0][x]
                 self.W0_weights[x][y] = self.W0_weights[x][y] - temp
-
+        
+        print("This is the weights going to the ouput nodes")
+        for y in self.W0_weights[0:3]:
+            for x in y:
+                print (x, end=" ")
+            print()
+        print()
+        
         for x in range(len(self.W0_bias_weights)):
             self.W0_bias_weights[x] = self.W0_bias_weights[x] - self.learning_rate * self.derived_values_output[x] * output_of_hidden[0][x]
     
@@ -268,7 +275,15 @@ class CNN:
         # This updates the weights for the hidden layer
         for x in range(len(self.W5_weights)):
             for y in range(len(self.W5_weights[x])):
-                self.W5_weights[x][y] = self.W5_weights[x][y] - self.learning_rate * self.derived_values_hidden[y] * output_of_reshape[0][x] 
+                temp = self.learning_rate * self.derived_values_hidden[y] * output_of_reshape[0][x]
+                self.W5_weights[x][y] = self.W5_weights[x][y] - temp
+
+        print("This is the weights going to the hidden nodes")
+        for y in self.W5_weights[0:3]:
+            for x in y:
+                print (x, end=" ")
+            print()
+        print()
 
         for x in range(len(self.W5_bias_weights)):
             self.W5_bias_weights[x] = self.W5_bias_weights[x] - self.learning_rate * self.derived_values_hidden[x] * output_of_reshape[0][x]
