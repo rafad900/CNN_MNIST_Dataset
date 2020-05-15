@@ -3,23 +3,6 @@ import copy, random, os, pandas as pd
 import matplotlib.pyplot as plt
 import warnings
 
-'''def handle_warning(message, category, filename, lineno, file=None, line=None):
-    print('A warning occurred:')
-    print(message)
-    print('Do you wish to continue?')
-
-    while True:
-        response = input('y/n: ').lower()
-        if response not in {'y', 'n'}:
-            print('Not understood.')
-        else:
-            break
-
-    if response == 'n':
-        raise category(message)
-
-warnings.showwarning = handle_warning'''            # THIS IS FOR DEBUGGING PURPOSES
-
 class CNN:
     def __init__(self):
         self.filters = [] # THESE NEVER CHANGE DURING THE BACK PROPAGATION
@@ -83,27 +66,27 @@ class CNN:
 
         # Set up the images 
         self.TRAIN, self.TEST = self.extract_images()
-        self.TRAIN = self.TRAIN[0:100]
-        self.TEST = self.TEST[0:100]
+        self.TRAIN = self.TRAIN[0:10]
+        self.TEST = self.TEST[0:10]
 
         # Give random values to the weights
         for x in range(2000):
             self.W5_weights.append([])
             for y in range(100):
-                self.W5_weights[x].append(random.uniform(-0.05, 0.05))
+                self.W5_weights[x].append(round(random.uniform(-0.05, 0.05), 3))
         self.W5_weights = np.array(self.W5_weights)
         
         for x in range(100):
             self.W0_weights.append([])
             for y in range(10):
-                self.W0_weights[x].append(random.uniform(-0.05, 0.05))
+                self.W0_weights[x].append(round(random.uniform(-0.05, 0.05), 3))
         self.W0_weights = np.array(self.W0_weights)
 
         for x in range(100):
-            self.W5_bias_weights.append(random.uniform(-0.05,0.05))
+            self.W5_bias_weights.append(round(random.uniform(-0.05,0.05), 3))
 
         for x in range(10):
-            self.W0_bias_weights.append(random.uniform(-0.05,0.05))
+            self.W0_bias_weights.append(round(random.uniform(-0.05,0.05), 3))
         
 
     def open_images(self, path):
@@ -242,12 +225,13 @@ class CNN:
             classification_percent.append(e/ total)
         return classification_percent
     
-    def back_propagation(self, classifications, expected, output_of_hidden, output_of_reshape):
+    def back_propagation(self, classifications, expected, output_of_hidden, output_of_reshape, image_count):
         # Begin the back propagation, only W5 AND W0 change, not the filters
         self.derivatives_of_output(classifications, expected)
         self.derivatives_of_hidden(output_of_hidden)
-        self.update_output_weights(output_of_hidden)
-        self.update_hidden_weights(output_of_reshape)
+        if (image_count % 10 == 0):
+            self.update_output_weights(output_of_hidden)
+            self.update_hidden_weights(output_of_reshape)
 
     def derivatives_of_output(self, classifications, expected):
         for i in range(len(classifications)):
@@ -274,15 +258,15 @@ class CNN:
         for x in range(len(self.W0_weights)):
             for y in range(len(self.W0_weights[x])):
                 # print("Delta::::", self.derived_values_output[y] ,"Out of hidden", output_of_hidden[x])
-                temp = self.learning_rate * self.derived_values_output[0][y] * output_of_hidden[x]
-                self.W0_weights[x][y] = self.W0_weights[x][y] + temp
+                o_temp = self.learning_rate * self.derived_values_output[0][y] * output_of_hidden[x]
+                self.W0_weights[x][y] = self.W0_weights[x][y] + o_temp
         
-        print("This is the weights going to the ouput nodes")
-        for y in self.W0_weights[0:3]:
+        '''print("This is the weights going to the ouput nodes")
+        for y in self.W0_weights:
             for x in y:
                 print (x, end=" ")
             print()
-        print()
+        print()'''
         
         for x in range(len(self.W0_bias_weights)):
             self.W0_bias_weights[x] = self.W0_bias_weights[x] - self.learning_rate * self.derived_values_output[0][x] * output_of_hidden[x]
@@ -294,12 +278,12 @@ class CNN:
                 temp = self.learning_rate * self.derived_values_hidden[0][y] * output_of_reshape[0][x]
                 self.W5_weights[x][y] = self.W5_weights[x][y] - temp
 
-        print("This is the weights going to the hidden nodes")
-        for y in self.W5_weights[0:1]:
-            for x in y:
+        '''print("This is the weights going to the hidden nodes")
+        for y in self.W5_weights[1:100]:
+            for x in y[1:10]:
                 print (x, end=" ")
             print()
-        print()
+        print()'''
 
         for x in range(len(self.W5_bias_weights)):
             self.W5_bias_weights[x] = self.W5_bias_weights[x] - self.learning_rate * self.derived_values_hidden[0][x] * output_of_reshape[0][x]
@@ -342,7 +326,7 @@ class CNN:
             if (classification.index(max(classification)) != image[0]):
                 expected = [0] * 10
                 expected[image[0]] = 1
-                self.back_propagation(classification, expected, Second_RELU_output, Reshape_result) 
+                self.back_propagation(classification, expected, Second_RELU_output, Reshape_result, image_count) 
 
     def test(self):
         # Do the test operations
