@@ -31,6 +31,14 @@ class CNN:
         self.labels = []
         self.derived_values_output = []
         self.derived_values_hidden = []
+        x = []
+        for i in range(10):
+            x.append(0.0)
+        self.derived_values_output.append(copy.deepcopy(x))
+        y = []
+        for i in range(100):
+            y.append(0.0)
+        self.derived_values_hidden.append(copy.deepcopy(y))
         self.values_of_hidden = []
         self.values_of_output = []
         self.best_W0_weights = []
@@ -75,33 +83,33 @@ class CNN:
 
         # Set up the images 
         self.TRAIN, self.TEST = self.extract_images()
-        self.TRAIN = self.TRAIN[0:10]
-        self.TEST = self.TEST[0:10]
+        self.TRAIN = self.TRAIN[0:100]
+        self.TEST = self.TEST[0:100]
 
         # Give random values to the weights
         for x in range(2000):
             self.W5_weights.append([])
             for y in range(100):
-                self.W5_weights[x].append(random.uniform(-1.0, 1.0))
+                self.W5_weights[x].append(random.uniform(-0.05, 0.05))
         self.W5_weights = np.array(self.W5_weights)
         
         for x in range(100):
             self.W0_weights.append([])
             for y in range(10):
-                self.W0_weights[x].append(random.uniform(-1.0, 1.0))
+                self.W0_weights[x].append(random.uniform(-0.05, 0.05))
         self.W0_weights = np.array(self.W0_weights)
 
         for x in range(100):
-            self.W5_bias_weights.append(random.uniform(-1.0, 1.0))
+            self.W5_bias_weights.append(random.uniform(-0.05,0.05))
 
         for x in range(10):
-            self.W0_bias_weights.append(random.uniform(-1.0, 1.0))
+            self.W0_bias_weights.append(random.uniform(-0.05,0.05))
         
 
     def open_images(self, path):
         print("Opening and extracting images from: " + path)
         images = []
-        data = pd.read_csv(path)
+        data = pd.read_csv(path,  header=None)
 
         for i in range(0, data.shape[0]):              
             row = data.iloc[i].to_numpy()
@@ -109,9 +117,9 @@ class CNN:
         return images
 
     def extract_images(self):
-        #randomize = [1,2,3,4,5,6,7,8,9]
+        randomize = [0,1,2,3,4,5,6,7,8,9]
         #randomize = [0]
-        randomize = [0, 1, 5]
+        # randomize = [0, 1, 5]
         random.shuffle(randomize)
         total_images = []
         total_test_images = []
@@ -141,12 +149,13 @@ class CNN:
         for f in filters:
             for posx in range(20):
                 for posy in range(20):
+                    result = 0
                     for x in range(len(f)):
                         for y in range(len(f[x])): 
-                            result += image[posx + x][posy + y] * float(f[y][x])
+                            result += image[posx + x][posy + y] * float(f[x][y])
                     output[filter_count][posx][posy] = result
             filter_count += 1
-                    
+
     def RELU(self, matrix):
         # If greater than 0 then leave alone, otherwise, turn negative
         new_matrix = matrix
@@ -155,10 +164,11 @@ class CNN:
                 for y in range(len(matrix[f][x])):
                     if matrix[f][x][y] < 0:
                         new_matrix[f][x][y] = 0
+        # print (new_matrix[19])
         return new_matrix
 
     def pool(self, matrix):
-        # Average the vlaues in a 2 x 2 windows? and replace those 4 values by the average?
+        # Average the values in a 2 x 2 windows? and replace those 4 values by the average?
         new_matrix = []
         stride = []
         result = []
@@ -180,7 +190,6 @@ class CNN:
                         posy_new = 0
                         posx_new += 1
             posy_new, posx_new = 0, 0
-
         return new_matrix
 
     def reshape(self, matrix):
@@ -195,10 +204,12 @@ class CNN:
         if row != 1 or column != 2000:
             print ("There was an error with the shape of the matrix after reshape")
             exit(1)
-        hidden_node_values = matrix[0].dot( self.W5_weights)
+        # hidden_node_values = matrix[0].dot( self.W5_weights)
+        hidden_node_values = np.dot( matrix ,self.W5_weights)
+
         temp = hidden_node_values.tolist()
-        for x in range(len(temp)):
-            temp[x] += 1 * self.W5_bias_weights[x]
+        for x in range(len(temp[0])):
+            temp[0][x] += 1 * self.W5_bias_weights[x]
         hidden_node_values = np.array(temp)
         return hidden_node_values
 
@@ -206,7 +217,7 @@ class CNN:
         # Get rid of negative values in the 1 by 100 matrix
         new_matrix = []
         matrix = matrix.tolist()
-        for x in matrix:
+        for x in matrix[0]:
             if x < 0:
                 new_matrix.append(0)
             else:
@@ -214,9 +225,9 @@ class CNN:
         return new_matrix
     
     def multiply_by_output(self, matrix):
-        # Multiply the values of hidden layer by wieghts of output layer
-        matrix = np.array(matrix)
-        output_of_output = matrix.dot( self.W0_weights)
+        # Multiply the values of hidden layer by weights of output layer
+        # matrix = np.array(matrix)
+        output_of_output = np.dot( matrix ,self.W0_weights)
         temp = output_of_output.tolist()
         for x in range(len(temp)):
             temp[x] += 1 * self.W0_bias_weights[x]
@@ -239,27 +250,32 @@ class CNN:
         self.update_hidden_weights(output_of_reshape)
 
     def derivatives_of_output(self, classifications, expected):
-        self.derived_values_output = []
         for i in range(len(classifications)):
             y = classifications[i]
+            # print (">>>>>",classifications,"<<<<<<<")
             t = expected[i]
-            self.derived_values_output.append( (y - t) * y * (1 - y))
+            # self.derived_values_output.append( (y - t) * y * (1 - y)) 
+            self.derived_values_output[0][i] = ( (y - t))
+        
 
     def derivatives_of_hidden(self, output_of_hidden):
-        self.derived_values_hidden = []
         summation = 0
-        temp = output_of_hidden.tolist()
+        temp = output_of_hidden
         for x in range(len(self.W0_weights)):
             for y in range(len(self.W0_weights[x])):
-                summation += self.W0_weights[x][y] * self.derived_values_output[y]
-            self.derived_values_hidden.append(temp[x] * (1 - temp[x]) * summation)
+                summation += self.W0_weights[x][y] * self.derived_values_output[0][y]
+                # print("----->>>>>>>>>",summation, "<<<<<<<<---")
+            # self.derived_values_hidden.append(temp[x] * (1 - temp[x]) * summation)
+            self.derived_values_hidden[0][x] = (temp[x]  * summation)
+
     
     def update_output_weights(self, output_of_hidden):
         # This updates the weights for the output layer
         for x in range(len(self.W0_weights)):
             for y in range(len(self.W0_weights[x])):
-                temp = self.learning_rate * self.derived_values_output[y] * output_of_hidden[x]
-                self.W0_weights[x][y] = self.W0_weights[x][y] - temp
+                # print("Delta::::", self.derived_values_output[y] ,"Out of hidden", output_of_hidden[x])
+                temp = self.learning_rate * self.derived_values_output[0][y] * output_of_hidden[x]
+                self.W0_weights[x][y] = self.W0_weights[x][y] + temp
         
         print("This is the weights going to the ouput nodes")
         for y in self.W0_weights[0:3]:
@@ -269,13 +285,13 @@ class CNN:
         print()
         
         for x in range(len(self.W0_bias_weights)):
-            self.W0_bias_weights[x] = self.W0_bias_weights[x] - self.learning_rate * self.derived_values_output[x] * output_of_hidden[x]
+            self.W0_bias_weights[x] = self.W0_bias_weights[x] - self.learning_rate * self.derived_values_output[0][x] * output_of_hidden[x]
     
     def update_hidden_weights(self, output_of_reshape):
         # This updates the weights for the hidden layer
         for x in range(len(self.W5_weights)):
             for y in range(len(self.W5_weights[x])):
-                temp = self.learning_rate * self.derived_values_hidden[y] * output_of_reshape[0][x]
+                temp = self.learning_rate * self.derived_values_hidden[0][y] * output_of_reshape[0][x]
                 self.W5_weights[x][y] = self.W5_weights[x][y] - temp
 
         print("This is the weights going to the hidden nodes")
@@ -286,7 +302,7 @@ class CNN:
         print()
 
         for x in range(len(self.W5_bias_weights)):
-            self.W5_bias_weights[x] = self.W5_bias_weights[x] - self.learning_rate * self.derived_values_hidden[x] * output_of_reshape[0][x]
+            self.W5_bias_weights[x] = self.W5_bias_weights[x] - self.learning_rate * self.derived_values_hidden[0][x] * output_of_reshape[0][x]
 
     def train(self):
         # Do the training operations
@@ -303,11 +319,9 @@ class CNN:
             convo_result.append(copy.deepcopy(stride))
 
         for image in self.TRAIN:
-
-            if (image_count % 10 == 0):
+            if (image_count % 100 == 0):
                 print("\nIt has processed 100 images\nThere are %i left" % (len(self.TRAIN) - image_count))
             image_count += 1
-
             self.convo(image, convo_result)
 
             RELU_result = self.RELU(convo_result)
@@ -324,10 +338,11 @@ class CNN:
 
             classification = self.soft_max(Output_layer_output)
 
+
             if (classification.index(max(classification)) != image[0]):
                 expected = [0] * 10
                 expected[image[0]] = 1
-                self.back_propagation(classification, expected, Hidden_layer_result, Reshape_result) 
+                self.back_propagation(classification, expected, Second_RELU_output, Reshape_result) 
 
     def test(self):
         # Do the test operations
@@ -364,6 +379,8 @@ class CNN:
             Output_layer_output = self.multiply_by_output(Second_RELU_output)
 
             classification = self.soft_max(Output_layer_output)
+
+
 
             if (classification.index(max(classification)) == image[0]):
                 correct_count += 1
