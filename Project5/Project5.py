@@ -10,7 +10,7 @@ class CNN:
         self.TRAIN = []     # Contains the training images
         self.W5_weights = [] # This one should have 2000*100 weights
         self.W0_weights = [] # This should be the 100 * 10
-        self.learning_rate = 0.01
+        self.learning_rate = .0001
         self.labels = []
         self.derived_values_output = []
         self.derived_values_hidden = []
@@ -19,10 +19,20 @@ class CNN:
         self.best_W0_weights = []
         self.best_W5_weights = []
         self.best_correct_count = 0
-        self.W5_bias_weights = []
-        self.W0_bias_weights = []
+    
+    def reset(self):
+        x = []
+        for i in range(10):
+            x.append(0.0)
+        self.derived_values_output.append(copy.deepcopy(x))
+        y = []
+        for i in range(100):
+            y.append(0.0)
+        self.derived_values_hidden.append(copy.deepcopy(y))
+
     
     def setup(self):
+        self.reset()
         # Set up the filter values
         try:
             filter_file = open("filters.txt")
@@ -72,23 +82,9 @@ class CNN:
             self.W0_weights.append([])
             for y in range(10):
                 self.W0_weights[x].append(round(random.uniform(-0.05, 0.05), 3))
-        self.W0_weights = np.array(self.W0_weights)
-
-        for x in range(100):
-            self.W5_bias_weights.append(round(random.uniform(-0.05,0.05), 3))
-
-
-        for x in range(10):
-            self.W0_bias_weights.append(round(random.uniform(-0.05,0.05), 3))
+        self.W0_weights = np.array(self.W0_weights)      
         
-        x = []
-        for i in range(10):
-            x.append(0.0)
-        self.derived_values_output.append(copy.deepcopy(x))
-        y = []
-        for i in range(100):
-            y.append(0.0)
-        self.derived_values_hidden.append(copy.deepcopy(y))
+   
         
 
     def open_images(self, path):
@@ -183,6 +179,8 @@ class CNN:
         # Flatten out the results after the pooling 
         new_matrix = np.array(matrix)
         new_matrix = new_matrix.reshape([1, 2000])
+        # print ("The Matrix going in Hidden++++++++++++++++++++++++++++++")
+        # print ( matrix[0][0:100])
         return new_matrix
 
     def multiply_by_hidden(self, matrix):
@@ -191,14 +189,7 @@ class CNN:
         if row != 1 or column != 2000:
             print ("There was an error with the shape of the matrix after reshape")
             exit(1)
-        # hidden_node_values = matrix[0].dot( self.W5_weights)
-
         hidden_node_values = np.dot( matrix ,self.W5_weights)
-
-        temp = hidden_node_values.tolist()
-        for x in range(len(temp[0])):
-            temp[0][x] += 1 * self.W5_bias_weights[x]
-        hidden_node_values = np.array(temp)
         return hidden_node_values
 
     def second_RELU(self, matrix):
@@ -212,41 +203,33 @@ class CNN:
             else:
                 y.append(x)
         new_matrix.append(copy.deepcopy(y))
-        return new_matrix
+        return np.array(new_matrix)
     
     def multiply_by_output(self, matrix):
         # Multiply the values of hidden layer by weights of output layer
-        matrix = np.array(matrix)
         output_of_output = np.dot( matrix ,self.W0_weights)
-        temp = output_of_output.tolist()
-        for x in range(len(temp)):
-            temp[0][x] += 1 * self.W0_bias_weights[x]
-        output_of_output = np.array(temp)
         return output_of_output
 
     def soft_max(self, matrix):
-        matrix = matrix.tolist()
-        classification_percent = []
-        total = sum(matrix[0])
-        for e in matrix[0]:
-            classification_percent.append((e+1.0)/ (total + 1.0) )
-        return classification_percent
+        e_x = np.exp(matrix - np.max(matrix))
+        return (e_x)/ (e_x.sum())
     
     def back_propagation(self, classifications, expected, output_of_hidden, output_of_reshape, image_count):
         # Begin the back propagation, only W5 AND W0 change, not the filters
         self.derivatives_of_output(classifications, expected)
         self.derivatives_of_hidden(output_of_hidden)
-        if (image_count % 10 == 0):
+        if (image_count % 100 == 0):
             self.update_output_weights(output_of_hidden)
             self.update_hidden_weights(output_of_reshape)
+            self.reset()
 
     def derivatives_of_output(self, classifications, expected):
         for i in range(len(classifications)):
-            y = classifications[i]
+            y = classifications[0][i]
             # print (">>>>>",classifications,"<<<<<<<")
             t = expected[i]
             # self.derived_values_output.append( (y - t) * y * (1 - y)) 
-            self.derived_values_output[0][i] = ( (y - t))
+            self.derived_values_output[0][i] += ( (y - t))
         
 
     def derivatives_of_hidden(self, output_of_hidden):
@@ -258,7 +241,11 @@ class CNN:
                 summation += self.W0_weights[x][y] * self.derived_values_output[0][y]
                 # print("----->>>>>>>>>",summation, "<<<<<<<<---")
             # self.derived_values_hidden.append(temp[x] * (1 - temp[x]) * summation)
-            self.derived_values_hidden[0][x] = (temp[0][x]  * summation)
+            # self.derived_values_hidden[0][x] = (temp[0][x]  * summation)
+            if (summation < 0):
+                self.derived_values_hidden[0][x] += 0
+            else:
+                self.derived_values_hidden[0][x] += summation
 
     
     def update_output_weights(self, output_of_hidden):
@@ -266,40 +253,23 @@ class CNN:
         for x in range(len(self.W0_weights)):
             for y in range(len(self.W0_weights[x])):
                 # print("Delta::::", self.derived_values_output[y] ,"Out of hidden", output_of_hidden[x])
-                o_temp = self.learning_rate * self.derived_values_output[0][y] * output_of_hidden[0][x]
-                self.W0_weights[x][y] = self.W0_weights[x][y] - o_temp
-        
-        '''print("This is the weights going to the ouput nodes")
-        for y in self.W0_weights:
-            for x in y:
-                print (x, end=" ")
-            print()
-        print()'''
-        
-        for x in range(len(self.W0_bias_weights)):
-            self.W0_bias_weights[x] = self.W0_bias_weights[x] - self.learning_rate * self.derived_values_output[0][x] * output_of_hidden[0][x]
+                o_temp = self.learning_rate * (self.derived_values_output[0][y])/ 100 * output_of_hidden[0][x]
+                self.W0_weights[x][y] = self.W0_weights[x][y] + o_temp
     
     def update_hidden_weights(self, output_of_reshape):
         # This updates the weights for the hidden layer
         for x in range(len(self.W5_weights)):
             for y in range(len(self.W5_weights[x])):
-                temp = self.learning_rate * self.derived_values_hidden[0][y] * output_of_reshape[0][x]
-                self.W5_weights[x][y] = self.W5_weights[x][y] - temp
+                temp = self.learning_rate * (self.derived_values_hidden[0][y])/100 * output_of_reshape[0][x]
+                self.W5_weights[x][y] = self.W5_weights[x][y] + temp
 
-        '''print("This is the weights going to the hidden nodes")
-        for y in self.W5_weights[1:100]:
-            for x in y[1:10]:
-                print (x, end=" ")
-            print()
-        print()'''
 
-        for x in range(len(self.W5_bias_weights)):
-            self.W5_bias_weights[x] = self.W5_bias_weights[x] - self.learning_rate * self.derived_values_hidden[0][x] * output_of_reshape[0][x]
 
     def train(self):
         # Do the training operations
 
         image_count = 0
+        correct_count = 0
         convo_result = []
         stride = []
         result = []
@@ -310,9 +280,8 @@ class CNN:
         for i in range(20):
             convo_result.append(copy.deepcopy(stride))
 
+        i = 0
         for image in self.TRAIN:
-            if (image_count % 100 == 0):
-                print("\nIt has processed 100 images\nThere are %i left" % (len(self.TRAIN) - image_count))
             image_count += 1
             self.convo(image, convo_result)
 
@@ -336,10 +305,19 @@ class CNN:
 
             print ( np.argmax(classification) ,"::::::",image[0])
 
-            if (classification.index(max(classification)) != image[0]):
-                expected = [0] * 10
-                expected[image[0]] = 1
-                self.back_propagation(classification, expected, Second_RELU_output, Reshape_result, image_count) 
+           
+            expected = [0] * 10
+            expected[image[0]] = 1
+            classification = classification.tolist();
+            self.back_propagation(classification, expected, Second_RELU_output, Reshape_result, image_count) 
+
+            if (np.argmax(classification) == image[0]):
+                correct_count += 1
+            if (image_count % 100 == 0):
+                i+=1;
+                print ("Batch",i,"with ratio: ", correct_count/100)
+                correct_count = 0
+                print("\nIt has processed 100 images\nThere are %i left" % (len(self.TRAIN) - image_count))
 
     def test(self):
         # Do the test operations
@@ -359,8 +337,6 @@ class CNN:
 
         for image in self.TEST:
             
-            if (image_count % 100 == 0):
-                print("It has processes 100 images\nThere are %i left" % (len(self.TEST) - image_count))
             image_count += 1
             self.convo(image, convo_result)
 
@@ -379,8 +355,14 @@ class CNN:
             classification = self.soft_max(Output_layer_output)
 
             print ( np.argmax(classification) ,"::::::",image[0])
-            if (classification.index(max(classification)) == image[0]):
+            if (np.argmax(classification) == image[0]):
                 correct_count += 1
+            
+            if (image_count % 100 == 0):
+                i+=1;
+                print ("Batch",i,"with ratio: ", correct_count/100)
+                correct_count = 0
+                print("It has processes 100 images\nThere are %i left" % (len(self.TEST) - image_count))
 
         if correct_count > self.best_correct_count:
             self.best_correct_count = correct_count/(len(self.TEST))
@@ -390,8 +372,6 @@ class CNN:
     def epochs(self):
         N = input("How many epochs should be run (must be a number): ")
         for x in range(int(N)):
-            self.TRAIN  = self.TRAIN[0:(x+1 *10)]
-            self.TEST  =  self.TEST[0:(x+1 *10)]
             self.train() 
             self.test()
     
