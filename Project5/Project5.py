@@ -14,14 +14,6 @@ class CNN:
         self.labels = []
         self.derived_values_output = []
         self.derived_values_hidden = []
-        x = []
-        for i in range(10):
-            x.append(0.0)
-        self.derived_values_output.append(copy.deepcopy(x))
-        y = []
-        for i in range(100):
-            y.append(0.0)
-        self.derived_values_hidden.append(copy.deepcopy(y))
         self.values_of_hidden = []
         self.values_of_output = []
         self.best_W0_weights = []
@@ -66,8 +58,8 @@ class CNN:
 
         # Set up the images 
         self.TRAIN, self.TEST = self.extract_images()
-        self.TRAIN = self.TRAIN[0:10]
-        self.TEST = self.TEST[0:10]
+        # self.TRAIN = self.TRAIN[0:10]
+        # self.TEST = self.TEST[0:10]
 
         # Give random values to the weights
         for x in range(2000):
@@ -85,8 +77,18 @@ class CNN:
         for x in range(100):
             self.W5_bias_weights.append(round(random.uniform(-0.05,0.05), 3))
 
+
         for x in range(10):
             self.W0_bias_weights.append(round(random.uniform(-0.05,0.05), 3))
+        
+        x = []
+        for i in range(10):
+            x.append(0.0)
+        self.derived_values_output.append(copy.deepcopy(x))
+        y = []
+        for i in range(100):
+            y.append(0.0)
+        self.derived_values_hidden.append(copy.deepcopy(y))
         
 
     def open_images(self, path):
@@ -117,6 +119,8 @@ class CNN:
         for x in randomize:
             test_i = self.open_images("data_set/valid" + str(x) + ".csv")
             total_test_images += test_i
+
+        random.shuffle(total_test_images)
 
         return total_images, total_test_images
 
@@ -188,6 +192,7 @@ class CNN:
             print ("There was an error with the shape of the matrix after reshape")
             exit(1)
         # hidden_node_values = matrix[0].dot( self.W5_weights)
+
         hidden_node_values = np.dot( matrix ,self.W5_weights)
 
         temp = hidden_node_values.tolist()
@@ -199,30 +204,32 @@ class CNN:
     def second_RELU(self, matrix):
         # Get rid of negative values in the 1 by 100 matrix
         new_matrix = []
+        y = []
         matrix = matrix.tolist()
         for x in matrix[0]:
             if x < 0:
-                new_matrix.append(0)
+                y.append(0)
             else:
-                new_matrix.append(x)
+                y.append(x)
+        new_matrix.append(copy.deepcopy(y))
         return new_matrix
     
     def multiply_by_output(self, matrix):
         # Multiply the values of hidden layer by weights of output layer
-        # matrix = np.array(matrix)
+        matrix = np.array(matrix)
         output_of_output = np.dot( matrix ,self.W0_weights)
         temp = output_of_output.tolist()
         for x in range(len(temp)):
-            temp[x] += 1 * self.W0_bias_weights[x]
+            temp[0][x] += 1 * self.W0_bias_weights[x]
         output_of_output = np.array(temp)
         return output_of_output
 
     def soft_max(self, matrix):
         matrix = matrix.tolist()
         classification_percent = []
-        total = sum(matrix)
-        for e in matrix:
-            classification_percent.append(e/ total)
+        total = sum(matrix[0])
+        for e in matrix[0]:
+            classification_percent.append((e+1.0)/ (total + 1.0) )
         return classification_percent
     
     def back_propagation(self, classifications, expected, output_of_hidden, output_of_reshape, image_count):
@@ -246,11 +253,12 @@ class CNN:
         summation = 0
         temp = output_of_hidden
         for x in range(len(self.W0_weights)):
+            summation = 0
             for y in range(len(self.W0_weights[x])):
                 summation += self.W0_weights[x][y] * self.derived_values_output[0][y]
                 # print("----->>>>>>>>>",summation, "<<<<<<<<---")
             # self.derived_values_hidden.append(temp[x] * (1 - temp[x]) * summation)
-            self.derived_values_hidden[0][x] = (temp[x]  * summation)
+            self.derived_values_hidden[0][x] = (temp[0][x]  * summation)
 
     
     def update_output_weights(self, output_of_hidden):
@@ -258,8 +266,8 @@ class CNN:
         for x in range(len(self.W0_weights)):
             for y in range(len(self.W0_weights[x])):
                 # print("Delta::::", self.derived_values_output[y] ,"Out of hidden", output_of_hidden[x])
-                o_temp = self.learning_rate * self.derived_values_output[0][y] * output_of_hidden[x]
-                self.W0_weights[x][y] = self.W0_weights[x][y] + o_temp
+                o_temp = self.learning_rate * self.derived_values_output[0][y] * output_of_hidden[0][x]
+                self.W0_weights[x][y] = self.W0_weights[x][y] - o_temp
         
         '''print("This is the weights going to the ouput nodes")
         for y in self.W0_weights:
@@ -269,7 +277,7 @@ class CNN:
         print()'''
         
         for x in range(len(self.W0_bias_weights)):
-            self.W0_bias_weights[x] = self.W0_bias_weights[x] - self.learning_rate * self.derived_values_output[0][x] * output_of_hidden[x]
+            self.W0_bias_weights[x] = self.W0_bias_weights[x] - self.learning_rate * self.derived_values_output[0][x] * output_of_hidden[0][x]
     
     def update_hidden_weights(self, output_of_reshape):
         # This updates the weights for the hidden layer
@@ -320,8 +328,13 @@ class CNN:
 
             Output_layer_output = self.multiply_by_output(Second_RELU_output)
 
+
             classification = self.soft_max(Output_layer_output)
 
+            # print (classification)
+
+
+            print ( np.argmax(classification) ,"::::::",image[0])
 
             if (classification.index(max(classification)) != image[0]):
                 expected = [0] * 10
@@ -342,6 +355,7 @@ class CNN:
             stride.append(copy.deepcopy(result))
         for i in range(20):
             convo_result.append(copy.deepcopy(stride))
+        # self.TEST = self.TEST[0:10]
 
         for image in self.TEST:
             
@@ -364,8 +378,7 @@ class CNN:
 
             classification = self.soft_max(Output_layer_output)
 
-
-
+            print ( np.argmax(classification) ,"::::::",image[0])
             if (classification.index(max(classification)) == image[0]):
                 correct_count += 1
 
@@ -377,6 +390,8 @@ class CNN:
     def epochs(self):
         N = input("How many epochs should be run (must be a number): ")
         for x in range(int(N)):
+            self.TRAIN  = self.TRAIN[0:(x+1 *10)]
+            self.TEST  =  self.TEST[0:(x+1 *10)]
             self.train() 
             self.test()
     
