@@ -10,7 +10,7 @@ class CNN:
         self.TRAIN = []     # Contains the training images
         self.W5_weights = [] # This one should have 2000*100 weights
         self.W0_weights = [] # This should be the 100 * 10
-        self.learning_rate = .0001
+        self.learning_rate = .000001
         self.labels = []
         self.derived_values_output = []
         self.derived_values_hidden = []
@@ -147,7 +147,6 @@ class CNN:
                 for y in range(len(matrix[f][x])):
                     if matrix[f][x][y] < 0:
                         new_matrix[f][x][y] = 0
-        # print (new_matrix[19])
         return new_matrix
 
     def pool(self, matrix):
@@ -214,31 +213,32 @@ class CNN:
         e_x = np.exp(matrix - np.max(matrix))
         return (e_x)/ (e_x.sum())
     
+    #         back_propagation(classification, expected, Second_RELU_output, Reshape_result, image_count) 
     def back_propagation(self, classifications, expected, output_of_hidden, output_of_reshape, image_count):
         # Begin the back propagation, only W5 AND W0 change, not the filters
-        self.derivatives_of_output(classifications, expected)
-        self.derivatives_of_hidden(output_of_hidden)
+        self.derivatives_of_output(classifications, expected, output_of_hidden)
+        self.derivatives_of_hidden(output_of_hidden, output_of_reshape)
         if (image_count % 100 == 0):
-            self.update_output_weights(output_of_hidden)
-            self.update_hidden_weights(output_of_reshape)
-            self.reset()
+            self.update_output_weights()
+            self.update_hidden_weights()
+            self.reset() # resetting back dW0 and dW5 to zeros
 
-    def derivatives_of_output(self, classifications, expected):
+    def derivatives_of_output(self, classifications, expected, output_of_hidden):
         for i in range(len(classifications)):
             y = classifications[0][i]
             # print (">>>>>",classifications,"<<<<<<<")
             t = expected[i]
             # self.derived_values_output.append( (y - t) * y * (1 - y)) 
-            self.derived_values_output[0][i] += ( (y - t))
+            self.derived_values_output[0][i] += ( (y - t))  * output_of_hidden[0][i]  # dWo = dWo + y5' * delta
         
 
-    def derivatives_of_hidden(self, output_of_hidden):
+    def derivatives_of_hidden(self, output_of_hidden , output_of_reshape):
         summation = 0
         temp = output_of_hidden
         for x in range(len(self.W0_weights)):
             summation = 0
             for y in range(len(self.W0_weights[x])):
-                summation += self.W0_weights[x][y] * self.derived_values_output[0][y]
+                summation += self.W0_weights[x][y] * self.derived_values_output[0][y]  * output_of_reshape[0][x]
                 # print("----->>>>>>>>>",summation, "<<<<<<<<---")
             # self.derived_values_hidden.append(temp[x] * (1 - temp[x]) * summation)
             # self.derived_values_hidden[0][x] = (temp[0][x]  * summation)
@@ -248,20 +248,20 @@ class CNN:
                 self.derived_values_hidden[0][x] += summation
 
     
-    def update_output_weights(self, output_of_hidden):
+    def update_output_weights(self):
         # This updates the weights for the output layer
         for x in range(len(self.W0_weights)):
             for y in range(len(self.W0_weights[x])):
-                # print("Delta::::", self.derived_values_output[y] ,"Out of hidden", output_of_hidden[x])
-                o_temp = self.learning_rate * (self.derived_values_output[0][y])/ 100 * output_of_hidden[0][x]
+                self.derived_values_output[0][y] = (self.derived_values_output[0][y])/ 100 
+                o_temp = self.learning_rate * self.derived_values_output[0][y]
                 self.W0_weights[x][y] = self.W0_weights[x][y] + o_temp
     
-    def update_hidden_weights(self, output_of_reshape):
+    def update_hidden_weights(self):
         # This updates the weights for the hidden layer
         for x in range(len(self.W5_weights)):
             for y in range(len(self.W5_weights[x])):
-                temp = self.learning_rate * (self.derived_values_hidden[0][y])/100 * output_of_reshape[0][x]
-                self.W5_weights[x][y] = self.W5_weights[x][y] + temp
+                self.derived_values_hidden[0][y] = (self.derived_values_hidden[0][y])/100
+                self.W5_weights[x][y] += self.W5_weights[x][y] + self.learning_rate
 
 
 
@@ -304,8 +304,6 @@ class CNN:
 
 
             print ( np.argmax(classification) ,"::::::",image[0])
-
-           
             expected = [0] * 10
             expected[image[0]] = 1
             classification = classification.tolist();
