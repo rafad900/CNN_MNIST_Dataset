@@ -18,9 +18,12 @@ class CNN:
         self.values_of_output = []
         self.best_W0_weights = []
         self.best_W5_weights = []
+        self.filteredTrain = []
         self.best_correct_count = 0
     
     def reset(self):
+        self.derived_values_output.clear()
+        self.derived_values_hidden.clear()
         x = []
         for i in range(10):
             x.append(0.0)
@@ -29,6 +32,8 @@ class CNN:
         for i in range(100):
             y.append(0.0)
         self.derived_values_hidden.append(copy.deepcopy(y))
+
+
 
     
     def setup(self):
@@ -68,9 +73,7 @@ class CNN:
 
         # Set up the images 
         self.TRAIN, self.TEST = self.extract_images()
-        # self.TRAIN = self.TRAIN[0:10]
-        # self.TEST = self.TEST[0:10]
-
+  
         # Give random values to the weights
         for x in range(2000):
             self.W5_weights.append([])
@@ -82,8 +85,10 @@ class CNN:
             self.W0_weights.append([])
             for y in range(10):
                 self.W0_weights[x].append(round(random.uniform(-0.05, 0.05), 3))
-        self.W0_weights = np.array(self.W0_weights)      
-        
+        self.W0_weights = np.array(self.W0_weights)     
+
+      
+            
    
         
 
@@ -100,7 +105,7 @@ class CNN:
     def extract_images(self):
         randomize = [0,1,2,3,4,5,6,7,8,9]
         #randomize = [0]
-        # randomize = [0, 1, 5]
+        # randomize = [7, 9]
         random.shuffle(randomize)
         total_images = []
         total_test_images = []
@@ -120,6 +125,7 @@ class CNN:
 
         return total_images, total_test_images
 
+    
     def convo(self, image, output):
         # Apply the filter to the all the pixels of the image
         Fposx, Fposy = 0, 0
@@ -226,26 +232,21 @@ class CNN:
     def derivatives_of_output(self, classifications, expected, output_of_hidden):
         for i in range(len(classifications)):
             y = classifications[0][i]
-            # print (">>>>>",classifications,"<<<<<<<")
             t = expected[i]
-            # self.derived_values_output.append( (y - t) * y * (1 - y)) 
-            self.derived_values_output[0][i] += ( (y - t))  * output_of_hidden[0][i]  # dWo = dWo + y5' * delta
+            for j in range (len(output_of_hidden[0])):
+                self.derived_values_output[0][i] += ( (y - t))  * output_of_hidden[0][j]  # dWo = dWo + y5' * delta
         
 
     def derivatives_of_hidden(self, output_of_hidden , output_of_reshape):
-        summation = 0
-        temp = output_of_hidden
-        for x in range(len(self.W0_weights)):
-            summation = 0
-            for y in range(len(self.W0_weights[x])):
-                summation += self.W0_weights[x][y] * self.derived_values_output[0][y]  * output_of_reshape[0][x]
-                # print("----->>>>>>>>>",summation, "<<<<<<<<---")
-            # self.derived_values_hidden.append(temp[x] * (1 - temp[x]) * summation)
-            # self.derived_values_hidden[0][x] = (temp[0][x]  * summation)
-            if (summation < 0):
-                self.derived_values_hidden[0][x] += 0
-            else:
-                self.derived_values_hidden[0][x] += summation
+        delta = np.array(self.derived_values_output)
+        w0_ = np.transpose(np.array(self.W0_weights))
+        e5 = np.dot(delta, w0_)
+        delta5 = self.second_RELU(e5)
+        temp = np.dot (np.transpose(output_of_reshape), delta5)
+        dW5 = np.array(self.derived_values_hidden)
+        np.add(dW5, temp)
+
+    
 
     
     def update_output_weights(self):
@@ -253,8 +254,7 @@ class CNN:
         for x in range(len(self.W0_weights)):
             for y in range(len(self.W0_weights[x])):
                 self.derived_values_output[0][y] = (self.derived_values_output[0][y])/ 100 
-                o_temp = self.learning_rate * self.derived_values_output[0][y]
-                self.W0_weights[x][y] = self.W0_weights[x][y] + o_temp
+                self.W0_weights[x][y] += (self.learning_rate * self.derived_values_output[0][y])
     
     def update_hidden_weights(self):
         # This updates the weights for the hidden layer
@@ -265,9 +265,10 @@ class CNN:
 
 
 
+
+
     def train(self):
         # Do the training operations
-
         image_count = 0
         correct_count = 0
         convo_result = []
@@ -306,13 +307,13 @@ class CNN:
             print ( np.argmax(classification) ,"::::::",image[0])
             expected = [0] * 10
             expected[image[0]] = 1
-            classification = classification.tolist();
+            classification = classification.tolist()
             self.back_propagation(classification, expected, Second_RELU_output, Reshape_result, image_count) 
 
             if (np.argmax(classification) == image[0]):
                 correct_count += 1
             if (image_count % 100 == 0):
-                i+=1;
+                i+=1
                 print ("Batch",i,"with ratio: ", correct_count/100)
                 correct_count = 0
                 print("\nIt has processed 100 images\nThere are %i left" % (len(self.TRAIN) - image_count))
@@ -357,7 +358,7 @@ class CNN:
                 correct_count += 1
             
             if (image_count % 100 == 0):
-                i+=1;
+                i+=1
                 print ("Batch",i,"with ratio: ", correct_count/100)
                 correct_count = 0
                 print("It has processes 100 images\nThere are %i left" % (len(self.TEST) - image_count))
