@@ -19,45 +19,52 @@ class CNN:
         self.best_W0_weights = []
         self.best_W5_weights = []
         self.best_correct_count = 0
-        self.filteredTrain = np.empty([10000,2000])
+        self.filteredTrain = np.empty([10000,2001])
         self.found_file = False
+        self.ran_one_epoch = False
         self.filtered_data = []
 
     def find_csv_filtered_file(self):
-        if (os.isfile("filtereddata.csv")):
+        if (os.path.isfile("filtereddata.csv") or self.ran_one_epoch):
+            print("filtereddata.csv was found. Extracting data right now.")
             self.found_file = True  
             open_file = pd.read_csv("filtereddata.csv", header=None)
             for line in range(open_file.shape[0]):
-                self.filtered_data.append(line.iloc[line].to_numpy())
+                temp = open_file.iloc[line].to_numpy()
+                self.filtered_data.append( temp )
 
 
     def setup(self):
         # Set up the filter values
-        try:
-            filter_file = open("filters.txt")
-        except(FileNotFoundError, IOError):
-            print ("The file was not found or the name of the file is not correct")
-            print ("The name of the file has to be filters.txt")
+        self.find_csv_filtered_file()
 
-        row = 0
-        column = 0
-        line_count = 0
+        if (not self.found_file):
+            try:
+                filter_file = open("filters.txt")
+            except(FileNotFoundError, IOError):
+                print ("The file was not found or the name of the file is not correct")
+                print ("The name of the file has to be filters.txt")
 
-        for line in filter_file:
-            values = line.split()
-            line_count += 1
-            for v in range(len(values)):
-                self.filters[v][column][row] = (values[v])
-            row +=1 
-            if (row == 9):
-                row = 0
-            if line_count == 9:
-                column += 1
-                line_count = 0
+            row = 0
+            column = 0
+            line_count = 0
 
-        # Set up the images 
-        self.TRAIN, self.TEST = self.extract_images()
-  
+            for line in filter_file:
+                values = line.split()
+                line_count += 1
+                for v in range(len(values)):
+                    self.filters[v][column][row] = (values[v])
+                row +=1 
+                if (row == 9):
+                    row = 0
+                if line_count == 9:
+                    column += 1
+                    line_count = 0
+
+            # Set up the images 
+            self.TRAIN, self.TEST = self.extract_images()
+            self.TRAIN = self.TRAIN[0:10]
+        
         # Give random values to the weights
         num_in, num_out = 2000 , 10 
         self.W5_weights = (np.random.rand( num_in,self.nhidden)-0.5)*2/np.sqrt(num_in )
@@ -208,12 +215,14 @@ class CNN:
                 
         convo_result = np.zeros([20,20,20])
 
+        if (self.ran_one_epoch):
+            self.find_csv_filtered_file()
+
         i = 0
-        if (self.found_file):
+        if (not self.found_file):
+            print("Its running from scratch")
             for image in self.TRAIN:
                 image_count += 1
-                # print(image_count)
-                start_time = time.time()
 
                 self.convo(image, convo_result)
 
@@ -226,12 +235,10 @@ class CNN:
                 a = Reshape_result.tolist()
                 a[0].insert(0, image[0])
 
-                Reshape_result = np.array(a)
-                self.filteredTrain[image_count -1] = Reshape_result
+                aReshape_result = np.array(a)
+                self.filteredTrain[image_count -1] = aReshape_result
                 if (image_count % 100 == 0):
                     print ("Done filtering 100 images")
-            
-                time_taken = time.time() - start_time
 
                 Hidden_layer_result  = self.multiply_by_hidden(Reshape_result)
 
@@ -255,24 +262,14 @@ class CNN:
                     correct_count = 0
                     print("\nIt has processed 100 images\nThere are %i left" % (len(self.TRAIN) - image_count))
             np.savetxt('filtereddata.csv' , self.filteredTrain, delimiter=',', newline='\n',fmt='%g')
+            self.ran_one_epoch = True
         else:
-
-
+            print("Beginning training from data from filtereddata.csv")
             for image in self.filtered_data:
                 image_count += 1
 
-                Reshape_result = image
-
-                a = Reshape_result.tolist()
-                a[0].insert(0, image[0])
-
-                Reshape_result = np.array(a)
-                self.filteredTrain[image_count -1] = Reshape_result
-                if (image_count % 100 == 0):
-                    print ("Done filtering 100 images")
+                Reshape_result = np.array(image[1:])
             
-                time_taken = time.time() - start_time
-
                 Hidden_layer_result  = self.multiply_by_hidden(Reshape_result)
 
                 Second_RELU_output =  Hidden_layer_result.clip(0)
@@ -294,7 +291,6 @@ class CNN:
                     print ("Batch",i,"with ratio: ", correct_count/100)
                     correct_count = 0
                     print("\nIt has processed 100 images\nThere are %i left" % (len(self.TRAIN) - image_count))
-            np.savetxt('filtereddata.csv' , self.filteredTrain, delimiter=',', newline='\n',fmt='%g')
 
 
     def test(self):
