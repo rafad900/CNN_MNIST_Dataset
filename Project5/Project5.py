@@ -3,7 +3,6 @@ import copy, random, os, pandas as pd
 import matplotlib.pyplot as plt
 import warnings
 import time
-from threading import Thread
 
 class CNN:
     def __init__(self):
@@ -21,6 +20,16 @@ class CNN:
         self.best_W5_weights = []
         self.best_correct_count = 0
         self.filteredTrain = np.empty([10000,2000])
+        self.found_file = False
+        self.filtered_data = []
+
+    def find_csv_filtered_file(self):
+        if (os.isfile("filtereddata.csv")):
+            self.found_file = True  
+            open_file = pd.read_csv("filtereddata.csv", header=None)
+            for line in range(open_file.shape[0]):
+                self.filtered_data.append(line.iloc[line].to_numpy())
+
 
     def setup(self):
         # Set up the filter values
@@ -191,37 +200,6 @@ class CNN:
                 self.derived_values_hidden[0][y] = (self.derived_values_hidden[0][y])/100
                 self.W5_weights[x][y] += self.W5_weights[x][y] + self.learning_rate
 
-    def train_callable(self,image, image_count, correct_count, convo_result):
-            # print(image_count)
-            start_time = time.time()
-
-            self.convo(image, convo_result)
-
-            RELU_result = convo_result.clip(0) # first RELU
-
-            Pool_result = self.pool(RELU_result)
-
-            Reshape_result = self.reshape(Pool_result)
-
-            time_taken = time.time() - start_time
-
-            Hidden_layer_result  = self.multiply_by_hidden(Reshape_result)
-
-            Second_RELU_output =  Hidden_layer_result.clip(0)
-
-            Output_layer_output = self.multiply_by_output(Second_RELU_output)
-
-            classification = self.soft_max(Output_layer_output)
-
-            # print ( np.argmax(classification) ,"::::::",image[0])
-            expected = [0] * 10
-            expected[image[0]] = 1
-            classification = classification.tolist()
-            self.back_propagation(classification, expected, Second_RELU_output, Reshape_result, image_count) 
-            if (np.argmax(classification) == image[0]):
-                correct_count += 1
-
-
 
     def train(self):
         # Do the training operations
@@ -229,20 +207,95 @@ class CNN:
         correct_count = 0
                 
         convo_result = np.zeros([20,20,20])
-        threads = list()
 
         i = 0
-        for image in self.TRAIN:
-            image_count += 1
-            x = Thread(target=self.train_callable, args=(image, image_count, correct_count, convo_result) )
-            threads.append(x)
-            x.start()
-            if (image_count % 100 == 0):
-                print("\nIt has created 100 children one with each image\nThere are %i left" % (len(self.TRAIN) - image_count))
+        if (self.found_file):
+            for image in self.TRAIN:
+                image_count += 1
+                # print(image_count)
+                start_time = time.time()
 
-        for t in threads:
-            t.join()
+                self.convo(image, convo_result)
+
+                RELU_result = convo_result.clip(0) # first RELU
+
+                Pool_result = self.pool(RELU_result)
+
+                Reshape_result = self.reshape(Pool_result)
+
+                a = Reshape_result.tolist()
+                a[0].insert(0, image[0])
+
+                Reshape_result = np.array(a)
+                self.filteredTrain[image_count -1] = Reshape_result
+                if (image_count % 100 == 0):
+                    print ("Done filtering 100 images")
             
+                time_taken = time.time() - start_time
+
+                Hidden_layer_result  = self.multiply_by_hidden(Reshape_result)
+
+                Second_RELU_output =  Hidden_layer_result.clip(0)
+
+                Output_layer_output = self.multiply_by_output(Second_RELU_output)
+
+                classification = self.soft_max(Output_layer_output)
+
+                # print ( np.argmax(classification) ,"::::::",image[0])
+                expected = [0] * 10
+                expected[image[0]] = 1
+                classification = classification.tolist()
+                self.back_propagation(classification, expected, Second_RELU_output, Reshape_result, image_count) 
+
+                if (np.argmax(classification) == image[0]):
+                    correct_count += 1
+                if (image_count % 100 == 0):
+                    i+=1
+                    print ("Batch",i,"with ratio: ", correct_count/100)
+                    correct_count = 0
+                    print("\nIt has processed 100 images\nThere are %i left" % (len(self.TRAIN) - image_count))
+            np.savetxt('filtereddata.csv' , self.filteredTrain, delimiter=',', newline='\n',fmt='%g')
+        else:
+
+
+            for image in self.filtered_data:
+                image_count += 1
+
+                Reshape_result = image
+
+                a = Reshape_result.tolist()
+                a[0].insert(0, image[0])
+
+                Reshape_result = np.array(a)
+                self.filteredTrain[image_count -1] = Reshape_result
+                if (image_count % 100 == 0):
+                    print ("Done filtering 100 images")
+            
+                time_taken = time.time() - start_time
+
+                Hidden_layer_result  = self.multiply_by_hidden(Reshape_result)
+
+                Second_RELU_output =  Hidden_layer_result.clip(0)
+
+                Output_layer_output = self.multiply_by_output(Second_RELU_output)
+
+                classification = self.soft_max(Output_layer_output)
+
+                # print ( np.argmax(classification) ,"::::::",image[0])
+                expected = [0] * 10
+                expected[image[0]] = 1
+                classification = classification.tolist()
+                self.back_propagation(classification, expected, Second_RELU_output, Reshape_result, image_count) 
+
+                if (np.argmax(classification) == image[0]):
+                    correct_count += 1
+                if (image_count % 100 == 0):
+                    i+=1
+                    print ("Batch",i,"with ratio: ", correct_count/100)
+                    correct_count = 0
+                    print("\nIt has processed 100 images\nThere are %i left" % (len(self.TRAIN) - image_count))
+            np.savetxt('filtereddata.csv' , self.filteredTrain, delimiter=',', newline='\n',fmt='%g')
+
 
     def test(self):
         # Do the test operations
