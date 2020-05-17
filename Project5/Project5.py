@@ -3,6 +3,7 @@ import copy, random, os, pandas as pd
 import matplotlib.pyplot as plt
 import warnings
 import time
+from threading import Thread
 
 class CNN:
     def __init__(self):
@@ -20,8 +21,6 @@ class CNN:
         self.best_W5_weights = []
         self.best_correct_count = 0
         self.filteredTrain = np.empty([10000,2000])
-
-
 
     def setup(self):
         # Set up the filter values
@@ -192,17 +191,7 @@ class CNN:
                 self.derived_values_hidden[0][y] = (self.derived_values_hidden[0][y])/100
                 self.W5_weights[x][y] += self.W5_weights[x][y] + self.learning_rate
 
-
-    def train(self):
-        # Do the training operations
-        image_count = 0
-        correct_count = 0
-                
-        convo_result = np.zeros([20,20,20])
-
-        i = 0
-        for image in self.TRAIN:
-            image_count += 1
+    def train_callable(self,image, image_count, correct_count, convo_result):
             # print(image_count)
             start_time = time.time()
 
@@ -215,16 +204,6 @@ class CNN:
             Reshape_result = self.reshape(Pool_result)
 
             time_taken = time.time() - start_time
-
-            # print ("TIME FOR FILTERING 1 IMAGE: ", time_taken)
-            
-            # Reshape_result.reshape(2000)
-            # self.filteredTrain[image_count -1] = Reshape_result
-            # if (image_count % 100 == 0):
-            #     print ("Done filtering 100 images")
-        
-        # np.savetxt('filtereddata.csv' , self.filteredTrain, delimiter=',', newline='\n',fmt='%g')
-
 
             Hidden_layer_result  = self.multiply_by_hidden(Reshape_result)
 
@@ -239,14 +218,31 @@ class CNN:
             expected[image[0]] = 1
             classification = classification.tolist()
             self.back_propagation(classification, expected, Second_RELU_output, Reshape_result, image_count) 
-
             if (np.argmax(classification) == image[0]):
                 correct_count += 1
+
+
+
+    def train(self):
+        # Do the training operations
+        image_count = 0
+        correct_count = 0
+                
+        convo_result = np.zeros([20,20,20])
+        threads = list()
+
+        i = 0
+        for image in self.TRAIN:
+            image_count += 1
+            x = Thread(target=self.train_callable, args=(image, image_count, correct_count, convo_result) )
+            threads.append(x)
+            x.start()
             if (image_count % 100 == 0):
-                i+=1
-                print ("Batch",i,"with ratio: ", correct_count/100)
-                correct_count = 0
-                print("\nIt has processed 100 images\nThere are %i left" % (len(self.TRAIN) - image_count))
+                print("\nIt has created 100 children one with each image\nThere are %i left" % (len(self.TRAIN) - image_count))
+
+        for t in threads:
+            t.join()
+            
 
     def test(self):
         # Do the test operations
