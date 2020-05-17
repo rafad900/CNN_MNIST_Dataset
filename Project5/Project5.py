@@ -7,17 +7,13 @@ import time
 class CNN:
     def __init__(self):
         self.filters = np.zeros([20,9,9]) # THESE NEVER CHANGE DURING THE BACK PROPAGATION
-        self.TEST = []      # Contains the test images
         self.TRAIN = []     # Contains the training images
         self.W5_weights = [] # This one should have 2000*100 weights
         self.W0_weights = [] # This should be the 100 * 10
         self.learning_rate = .000001
         self.nhidden = 100
-        self.labels = []
-        self.derived_values_hidden = np.zeros([1, self.nhidden ], dtype =float)
-        self.derived_values_output = np.zeros([1,10], dtype = float)
-        self.best_W0_weights = []
-        self.best_W5_weights = []
+        self.derived_values_hidden = np.zeros([2000, self.nhidden ], dtype =float)
+        self.derived_values_output = np.zeros([100,10], dtype = float)
         self.best_ratio =  0
         self.filteredTrain = np.empty([10000,2001])
         self.found_file = False
@@ -36,8 +32,6 @@ class CNN:
                 self.filtered_data [i] =  temp 
                 i+=1
             random.shuffle(self.filtered_data)
-
-            
 
 
     def setup(self):
@@ -69,7 +63,6 @@ class CNN:
 
             # Set up the images 
             self.TRAIN = self.extract_images()
-            # self.TRAIN = self.TRAIN[0:10]
         
         # Give random values to the weights
         num_in, num_out = 2000 , 10 
@@ -88,11 +81,8 @@ class CNN:
 
     def extract_images(self):
         randomize = [0,1,2,3,4,5,6,7,8,9]
-        #randomize = [0]
-        # randomize = [7, 9]
         random.shuffle(randomize)
         total_images = []
-        total_test_images = []
 
         for x in randomize:
             images = self.open_images("data_set/train" + str(x) + ".csv")
@@ -107,7 +97,7 @@ class CNN:
         image = image[1:]
         np.array(image)
         image = image.reshape([28, 28])
-        # loop over the input image, "sliding" the kernel across
+        # loop over the input image, "sliding" the filter across
 	    # each (x, y)-coordinate from left-to-right and top to
 	    # bottom
         for y in np.arange(0, 20 ):
@@ -164,45 +154,36 @@ class CNN:
     #     back_propagation(classification, expected, Second_RELU_output, Reshape_result, image_count) 
     def back_propagation(self, classifications, expected, output_of_hidden, output_of_reshape, image_count):
         # Begin the back propagation, only W5 AND W0 change, not the filters
-        self.derivatives_of_output(classifications, expected, output_of_hidden)
-        self.derivatives_of_hidden(output_of_hidden, output_of_reshape)
+        delta = np.zeros([1,10], dtype = float)
+        self.derivatives_of_output(classifications, expected, output_of_hidden, delta)
+        self.derivatives_of_hidden(output_of_hidden, output_of_reshape, delta)
         if (image_count % 100 == 0):
             self.update_output_weights()
             self.update_hidden_weights()
-            self.derived_values_hidden = np.zeros([1, self.nhidden ], dtype =float)
-            self.derived_values_output = np.zeros([1,10], dtype = float)
+            self.derived_values_hidden = np.zeros([2000, self.nhidden ], dtype =float)
+            self.derived_values_output = np.zeros([100,10], dtype = float)
 
-    def derivatives_of_output(self, classifications, expected, output_of_hidden):
-        for i in range(len(classifications)):
-            y = classifications[0][i]
-            t = expected[i]
-            for j in range (len(output_of_hidden[0])):
-                self.derived_values_output[0][i] += ( (y - t))  * output_of_hidden[0][j]  # dWo = dWo + y5' * delta
+    def derivatives_of_output(self, classifications, expected, output_of_hidden, delta):
+        y = np.array(expected)
+        delta = classifications - y
+        self.derived_values_output = self.derived_values_output + np.dot( np.transpose(output_of_hidden), delta)
         
 
-    def derivatives_of_hidden(self, output_of_hidden , output_of_reshape):
-        delta = np.array(self.derived_values_output)
-        w0_ = np.transpose(np.array(self.W0_weights))
-        e5 = np.dot(delta, w0_)
-        delta5 = e5.clip(0)  #delta5 = RELU(e5)
-        temp = np.dot (np.transpose(output_of_reshape), delta5)
-        dW5 = np.array(self.derived_values_hidden)
-        np.add(dW5, temp)
+    def derivatives_of_hidden(self, output_of_hidden , output_of_reshape, delta):
+        e5 = np.dot(delta , np.transpose(np.array(self.W0_weights)))
+        self.derived_values_hidden = self.derived_values_hidden +  np.dot (np.transpose(output_of_reshape), e5.clip(0) ) #delta5 = RELU(e5)
 
     
     def update_output_weights(self):
         # This updates the weights for the output layer
-        for x in range(len(self.W0_weights)):
-            for y in range(len(self.W0_weights[x])):
-                self.derived_values_output[0][y] = (self.derived_values_output[0][y])/ 100 
-                self.W0_weights[x][y] += (self.learning_rate * self.derived_values_output[0][y])
+        self.derived_values_output =  np.true_divide(self.derived_values_output , 100)
+        self.W0_weights = self.W0_weights + self.derived_values_output * self.learning_rate
+
     
     def update_hidden_weights(self):
         # This updates the weights for the hidden layer
-        for x in range(len(self.W5_weights)):
-            for y in range(len(self.W5_weights[x])):
-                self.derived_values_hidden[0][y] = (self.derived_values_hidden[0][y])/100
-                self.W5_weights[x][y] += self.W5_weights[x][y] + self.learning_rate
+        self.derived_values_hidden =  np.true_divide(self.derived_values_hidden , 100)
+        self.W5_weights = self.W5_weights + self.derived_values_hidden * self.learning_rate
 
 
     def train(self):
@@ -245,8 +226,7 @@ class CNN:
 
                 # print ( np.argmax(classification) ,"::::::",image[0])
                 expected = [0] * 10
-                expected[image[0]] = 1
-                classification = classification.tolist()
+                expected[int(image[0])] = 1
                 self.back_propagation(classification, expected, Second_RELU_output, Reshape_result, image_count) 
 
                 if (np.argmax(classification) == image[0]):
@@ -258,14 +238,12 @@ class CNN:
                     print("\nIt has processed 100 images\nThere are %i left" % (len(self.filtered_data) - image_count))
                     if (ratio > self.best_ratio):
                         self.best_ratio = ratio
-                        self.best_W0_weights = self.W0_weights
-                        self.best_w5_weights = self.W5_weights
+
                     correct_count = 0
             np.savetxt('filtereddata.csv' , self.filteredTrain, delimiter=',', newline='\n',fmt='%g')
             self.ran_one_epoch = True
         else:
             print("Beginning training from data from filtereddata.csv")
-            print (self.filtered_data)
             for image in self.filtered_data:
                 image_count += 1
                 data = image[1:]
@@ -283,6 +261,7 @@ class CNN:
                 # print ( np.argmax(classification) ,"::::::",int (image[0]))
                 expected = [0] * 10
                 expected[int(image[0])] = 1
+
                 classification = classification.tolist()
                 self.back_propagation(classification, expected, Second_RELU_output, Reshape_result, image_count) 
 
@@ -295,9 +274,10 @@ class CNN:
                     print("\nIt has processed 100 images\nThere are %i left" % (len(self.filtered_data) - image_count))
                     if (ratio > self.best_ratio):
                         self.best_ratio = ratio
-                        self.best_W0_weights = self.W0_weights
-                        self.best_w5_weights = self.W5_weights
+
                     correct_count = 0
+
+    
 
 
 
