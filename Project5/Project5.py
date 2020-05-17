@@ -2,57 +2,34 @@ import numpy as np
 import copy, random, os, pandas as pd
 import matplotlib.pyplot as plt
 import warnings
+import time
 
 class CNN:
     def __init__(self):
-        self.filters = [] # THESE NEVER CHANGE DURING THE BACK PROPAGATION
+        self.filters = np.zeros([20,9,9]) # THESE NEVER CHANGE DURING THE BACK PROPAGATION
         self.TEST = []      # Contains the test images
         self.TRAIN = []     # Contains the training images
         self.W5_weights = [] # This one should have 2000*100 weights
         self.W0_weights = [] # This should be the 100 * 10
         self.learning_rate = .000001
+        self.nhidden = 100
         self.labels = []
-        self.derived_values_output = []
-        self.derived_values_hidden = []
-        self.values_of_hidden = []
-        self.values_of_output = []
+        self.derived_values_hidden = np.zeros([1, self.nhidden ], dtype =float)
+        self.derived_values_output = np.zeros([1,10], dtype = float)
         self.best_W0_weights = []
         self.best_W5_weights = []
-        self.filteredTrain = []
         self.best_correct_count = 0
-    
-    def reset(self):
-        self.derived_values_output.clear()
-        self.derived_values_hidden.clear()
-        x = []
-        for i in range(10):
-            x.append(0.0)
-        self.derived_values_output.append(copy.deepcopy(x))
-        y = []
-        for i in range(100):
-            y.append(0.0)
-        self.derived_values_hidden.append(copy.deepcopy(y))
+        self.filteredTrain = np.empty([10000,2000])
 
 
 
-    
     def setup(self):
-        self.reset()
         # Set up the filter values
         try:
             filter_file = open("filters.txt")
         except(FileNotFoundError, IOError):
             print ("The file was not found or the name of the file is not correct")
             print ("The name of the file has to be filters.txt")
-        filters = []
-        blocks = []
-        column = []
-        for i in range(9):
-            column.append('')
-        for i in range(9):
-            blocks.append(copy.deepcopy(column))
-        for i in range(20):
-            filters.append(copy.deepcopy(blocks))
 
         row = 0
         column = 0
@@ -62,35 +39,21 @@ class CNN:
             values = line.split()
             line_count += 1
             for v in range(len(values)):
-                filters[v][column][row] = (values[v])
+                self.filters[v][column][row] = (values[v])
             row +=1 
             if (row == 9):
                 row = 0
             if line_count == 9:
                 column += 1
                 line_count = 0
-        self.filters = np.array(filters)
 
         # Set up the images 
         self.TRAIN, self.TEST = self.extract_images()
   
         # Give random values to the weights
-        for x in range(2000):
-            self.W5_weights.append([])
-            for y in range(100):
-                self.W5_weights[x].append(round(random.uniform(-0.05, 0.05), 3))
-        self.W5_weights = np.array(self.W5_weights)
-        
-        for x in range(100):
-            self.W0_weights.append([])
-            for y in range(10):
-                self.W0_weights[x].append(round(random.uniform(-0.05, 0.05), 3))
-        self.W0_weights = np.array(self.W0_weights)     
-
-      
-            
-   
-        
+        num_in, num_out = 2000 , 10 
+        self.W5_weights = (np.random.rand( num_in,self.nhidden)-0.5)*2/np.sqrt(num_in )
+        self.W0_weights = (np.random.rand(self.nhidden, num_out)-0.5)*2/np.sqrt(self.nhidden)
 
     def open_images(self, path):
         print("Opening and extracting images from: " + path)
@@ -122,55 +85,38 @@ class CNN:
             total_test_images += test_i
 
         random.shuffle(total_test_images)
+    
 
         return total_images, total_test_images
 
     
     def convo(self, image, output):
         # Apply the filter to the all the pixels of the image
-        Fposx, Fposy = 0, 0
         image = image[1:]
         np.array(image)
         image = image.reshape([28, 28])
-        filters = self.filters.tolist()
-        filter_count = 0
-        result = 0
-        for f in filters:
-            for posx in range(20):
-                for posy in range(20):
-                    result = 0
-                    for x in range(len(f)):
-                        for y in range(len(f[x])): 
-                            result += image[posx + x][posy + y] * float(f[x][y])
-                    output[filter_count][posx][posy] = result
-            filter_count += 1
+        # loop over the input image, "sliding" the kernel across
+	    # each (x, y)-coordinate from left-to-right and top to
+	    # bottom
+        for y in np.arange(0, 20 ):
+            for x in np.arange(0, 20):
+                # extract the slice of the image
+                image_slice = image[y :y  + 9, x :x  + 9]
+                # perform the actual convolution by taking the
+                # element-wise multiplicate then summing the matrix
+                for i in range (20):
+                    result = np.einsum('ij,ij',image_slice,self.filters[i])
+                    output[i][y][x] = result
 
-    def RELU(self, matrix):
-        # If greater than 0 then leave alone, otherwise, turn negative
-        new_matrix = matrix
-        for f in range(len(matrix)):
-            for x in range(len(matrix[f])):
-                for y in range(len(matrix[f][x])):
-                    if matrix[f][x][y] < 0:
-                        new_matrix[f][x][y] = 0
-        return new_matrix
+           
 
     def pool(self, matrix):
         # Average the values in a 2 x 2 windows? and replace those 4 values by the average?
-        new_matrix = []
-        stride = []
-        result = []
-        for i in range(10):
-            result.append(0.0)
-        for i in range(10):
-            stride.append(copy.deepcopy(result))
-        for i in range(20):
-            new_matrix.append(copy.deepcopy(stride))
-
+        new_matrix = np.zeros([20,10,10], dtype = float)
         posx_new, posy_new = 0, 0
-        for f in range(len(matrix)):
-            for x in range(0, len(matrix[f]), 2):
-                for y in range(0, len(matrix[f][x]), 2):
+        for f in range(10):
+            for x in range(0, 10, 2):
+                for y in range(0, 20, 2):
                     average = (matrix[f][x][y] + matrix[f][x+1][y] + matrix[f][x][y+1] + matrix[f][x+1][y+1]) / 4
                     new_matrix[f][posx_new][posy_new] = average
                     posy_new += 1
@@ -182,11 +128,7 @@ class CNN:
 
     def reshape(self, matrix):
         # Flatten out the results after the pooling 
-        new_matrix = np.array(matrix)
-        new_matrix = new_matrix.reshape([1, 2000])
-        # print ("The Matrix going in Hidden++++++++++++++++++++++++++++++")
-        # print ( matrix[0][0:100])
-        return new_matrix
+        return matrix.reshape([1, 2000])
 
     def multiply_by_hidden(self, matrix):
         # Multiply the values by the weigths for the hidden layer
@@ -197,18 +139,6 @@ class CNN:
         hidden_node_values = np.dot( matrix ,self.W5_weights)
         return hidden_node_values
 
-    def second_RELU(self, matrix):
-        # Get rid of negative values in the 1 by 100 matrix
-        new_matrix = []
-        y = []
-        matrix = matrix.tolist()
-        for x in matrix[0]:
-            if x < 0:
-                y.append(0)
-            else:
-                y.append(x)
-        new_matrix.append(copy.deepcopy(y))
-        return np.array(new_matrix)
     
     def multiply_by_output(self, matrix):
         # Multiply the values of hidden layer by weights of output layer
@@ -219,7 +149,7 @@ class CNN:
         e_x = np.exp(matrix - np.max(matrix))
         return (e_x)/ (e_x.sum())
     
-    #         back_propagation(classification, expected, Second_RELU_output, Reshape_result, image_count) 
+    #     back_propagation(classification, expected, Second_RELU_output, Reshape_result, image_count) 
     def back_propagation(self, classifications, expected, output_of_hidden, output_of_reshape, image_count):
         # Begin the back propagation, only W5 AND W0 change, not the filters
         self.derivatives_of_output(classifications, expected, output_of_hidden)
@@ -227,7 +157,8 @@ class CNN:
         if (image_count % 100 == 0):
             self.update_output_weights()
             self.update_hidden_weights()
-            self.reset() # resetting back dW0 and dW5 to zeros
+            self.derived_values_hidden = np.zeros([1, self.nhidden ], dtype =float)
+            self.derived_values_output = np.zeros([1,10], dtype = float)
 
     def derivatives_of_output(self, classifications, expected, output_of_hidden):
         for i in range(len(classifications)):
@@ -241,12 +172,10 @@ class CNN:
         delta = np.array(self.derived_values_output)
         w0_ = np.transpose(np.array(self.W0_weights))
         e5 = np.dot(delta, w0_)
-        delta5 = self.second_RELU(e5)
+        delta5 = e5.clip(0)  #delta5 = RELU(e5)
         temp = np.dot (np.transpose(output_of_reshape), delta5)
         dW5 = np.array(self.derived_values_hidden)
         np.add(dW5, temp)
-
-    
 
     
     def update_output_weights(self):
@@ -264,47 +193,48 @@ class CNN:
                 self.W5_weights[x][y] += self.W5_weights[x][y] + self.learning_rate
 
 
-
-
-
     def train(self):
         # Do the training operations
         image_count = 0
         correct_count = 0
-        convo_result = []
-        stride = []
-        result = []
-        for i in range(20):
-            result.append(0.0)
-        for i in range(20):
-            stride.append(copy.deepcopy(result))
-        for i in range(20):
-            convo_result.append(copy.deepcopy(stride))
+                
+        convo_result = np.zeros([20,20,20])
 
         i = 0
         for image in self.TRAIN:
             image_count += 1
+            # print(image_count)
+            start_time = time.time()
+
             self.convo(image, convo_result)
 
-            RELU_result = self.RELU(convo_result)
+            RELU_result = convo_result.clip(0) # first RELU
 
             Pool_result = self.pool(RELU_result)
 
             Reshape_result = self.reshape(Pool_result)
 
+            time_taken = time.time() - start_time
+
+            # print ("TIME FOR FILTERING 1 IMAGE: ", time_taken)
+            
+            # Reshape_result.reshape(2000)
+            # self.filteredTrain[image_count -1] = Reshape_result
+            # if (image_count % 100 == 0):
+            #     print ("Done filtering 100 images")
+        
+        # np.savetxt('filtereddata.csv' , self.filteredTrain, delimiter=',', newline='\n',fmt='%g')
+
+
             Hidden_layer_result  = self.multiply_by_hidden(Reshape_result)
 
-            Second_RELU_output = self.second_RELU(Hidden_layer_result)
+            Second_RELU_output =  Hidden_layer_result.clip(0)
 
             Output_layer_output = self.multiply_by_output(Second_RELU_output)
 
-
             classification = self.soft_max(Output_layer_output)
 
-            # print (classification)
-
-
-            print ( np.argmax(classification) ,"::::::",image[0])
+            # print ( np.argmax(classification) ,"::::::",image[0])
             expected = [0] * 10
             expected[image[0]] = 1
             classification = classification.tolist()
@@ -320,26 +250,38 @@ class CNN:
 
     def test(self):
         # Do the test operations
+
+        convo_result = np.zeros([20,20,20])
+
         correct_count = 0
         image_count = 0
 
-        convo_result = []
-        stride = []
-        result = []
-        for i in range(20):
-            result.append(0.0)
-        for i in range(20):
-            stride.append(copy.deepcopy(result))
-        for i in range(20):
-            convo_result.append(copy.deepcopy(stride))
         # self.TEST = self.TEST[0:10]
-
+        i = 0
         for image in self.TEST:
-            
             image_count += 1
+
             self.convo(image, convo_result)
 
-            RELU_result = self.RELU(convo_result)
+            RELU_result = convo_result.clip(0) # first RELU
+
+            Pool_result = self.pool(RELU_result)
+
+            Reshape_result = self.reshape(Pool_result)
+
+            # time_taken = time.time() - start_time
+
+            Hidden_layer_result  = self.multiply_by_hidden(Reshape_result)
+
+            Second_RELU_output =  Hidden_layer_result.clip(0)
+
+            Output_layer_output = self.multiply_by_output(Second_RELU_output)
+
+            classification = self.soft_max(Output_layer_output)
+
+            self.convo(image, convo_result)
+
+            RELU_result = convo_result.clip(0) # first RELU
 
             Pool_result = self.pool(RELU_result)
 
@@ -347,13 +289,13 @@ class CNN:
 
             Hidden_layer_result  = self.multiply_by_hidden(Reshape_result)
 
-            Second_RELU_output = self.second_RELU(Hidden_layer_result)
+            Second_RELU_output =  Hidden_layer_result.clip(0)
 
             Output_layer_output = self.multiply_by_output(Second_RELU_output)
 
             classification = self.soft_max(Output_layer_output)
 
-            print ( np.argmax(classification) ,"::::::",image[0])
+            # print ( np.argmax(classification) ,"::::::",image[0])
             if (np.argmax(classification) == image[0]):
                 correct_count += 1
             
@@ -368,11 +310,13 @@ class CNN:
             self.best_W0_weights = self.W0_weights
             self.best_w5_weights = self.W5_weights
 
+
     def epochs(self):
         N = input("How many epochs should be run (must be a number): ")
         for x in range(int(N)):
             self.train() 
-            self.test()
+            
+        self.test()
     
     def final_results(self):
         print("The best network had a success ration of: %f" % self.best_correct_count)
