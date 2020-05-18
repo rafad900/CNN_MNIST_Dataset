@@ -8,10 +8,14 @@ class CNN:
     def __init__(self):
         self.filters = np.zeros([20,9,9]) # THESE NEVER CHANGE DURING THE BACK PROPAGATION
         self.TRAIN = []     # Contains the training images
-        self.W5_weights = [] # This one should have 2000*100 weights
-        self.W0_weights = [] # This should be the 100 * 10
-        self.learning_rate = .000001
         self.nhidden = 100
+
+        # self.W5_weights = np.zeros([2000, self.nhidden ], dtype =float)
+        # self.W0_weights = np.zeros([100,10], dtype = float)
+
+        self.W5_weights = (np.random.rand( 2000,self.nhidden)-0.5)*2/np.sqrt(2000 )
+        self.W0_weights = (np.random.rand(self.nhidden, 10)-0.5)*2/np.sqrt(self.nhidden)        # Give random values to the weights
+        self.learning_rate = .000001
         self.derived_values_hidden = np.zeros([2000, self.nhidden ], dtype =float)
         self.derived_values_output = np.zeros([100,10], dtype = float)
         self.best_ratio =  0
@@ -20,6 +24,8 @@ class CNN:
         self.ran_one_epoch = False
         self.filtered_data = np.empty([10000,2001])
         self.TESTfile_name = ""
+        self.epoch_best_ratio = 0
+
 
     def find_csv_filtered_file(self):
         if (os.path.isfile("filtereddata.csv") or self.ran_one_epoch):
@@ -31,43 +37,38 @@ class CNN:
                 temp = open_file.iloc[line].to_numpy()
                 self.filtered_data [i] =  temp 
                 i+=1
-            random.shuffle(self.filtered_data)
 
 
     def setup(self):
         # Set up the filter values
+        try:
+            filter_file = open("filters.txt")
+        except(FileNotFoundError, IOError):
+            print ("The file was not found or the name of the file is not correct")
+            print ("The name of the file has to be filters.txt")
+
+        row = 0
+        column = 0
+        line_count = 0
+
+        for line in filter_file:
+            values = line.split()
+            line_count += 1
+            for v in range(len(values)):
+                self.filters[v][column][row] = (values[v])
+            row +=1 
+            if (row == 9):
+                row = 0
+            if line_count == 9:
+                column += 1
+                line_count = 0
+
         self.find_csv_filtered_file()
 
         if (not self.found_file):
-            try:
-                filter_file = open("filters.txt")
-            except(FileNotFoundError, IOError):
-                print ("The file was not found or the name of the file is not correct")
-                print ("The name of the file has to be filters.txt")
-
-            row = 0
-            column = 0
-            line_count = 0
-
-            for line in filter_file:
-                values = line.split()
-                line_count += 1
-                for v in range(len(values)):
-                    self.filters[v][column][row] = (values[v])
-                row +=1 
-                if (row == 9):
-                    row = 0
-                if line_count == 9:
-                    column += 1
-                    line_count = 0
-
-            # Set up the images 
             self.TRAIN = self.extract_images()
+
         
-        # Give random values to the weights
-        num_in, num_out = 2000 , 10 
-        self.W5_weights = (np.random.rand( num_in,self.nhidden)-0.5)*2/np.sqrt(num_in )
-        self.W0_weights = (np.random.rand(self.nhidden, num_out)-0.5)*2/np.sqrt(self.nhidden)
 
     def open_images(self, path):
         print("Opening and extracting images from: " + path)
@@ -109,8 +110,7 @@ class CNN:
                 for i in range (20):
                     result = np.einsum('ij,ij',image_slice,self.filters[i])
                     output[i][y][x] = result
-
-           
+          
 
     def pool(self, matrix):
         # Average the values in a 2 x 2 windows? and replace those 4 values by the average?
@@ -148,14 +148,16 @@ class CNN:
         return output_of_output
 
     def soft_max(self, matrix):
-        e_x = np.exp(matrix - np.max(matrix))
-        return (e_x)/ (e_x.sum())
+        normalisers = np.sum(np.exp(matrix),axis=1)*np.ones((1,np.shape(matrix)[0]))
+        return np.transpose(np.transpose(np.exp(matrix))/normalisers)
+        # e_x = np.exp(matrix - np.max(matrix))
+        # return (e_x)/ (e_x.sum())
     
     #     back_propagation(classification, expected, Second_RELU_output, Reshape_result, image_count) 
     def back_propagation(self, classifications, expected, output_of_hidden, output_of_reshape, image_count):
         # Begin the back propagation, only W5 AND W0 change, not the filters
         delta = np.zeros([1,10], dtype = float)
-        self.derivatives_of_output(classifications, expected, output_of_hidden, delta)
+        delta = self.derivatives_of_output(classifications, expected, output_of_hidden)
         self.derivatives_of_hidden(output_of_hidden, output_of_reshape, delta)
         if (image_count % 100 == 0):
             self.update_output_weights()
@@ -163,27 +165,27 @@ class CNN:
             self.derived_values_hidden = np.zeros([2000, self.nhidden ], dtype =float)
             self.derived_values_output = np.zeros([100,10], dtype = float)
 
-    def derivatives_of_output(self, classifications, expected, output_of_hidden, delta):
-        y = np.array(expected)
-        delta = classifications - y
-        self.derived_values_output = self.derived_values_output + np.dot( np.transpose(output_of_hidden), delta)
+    def derivatives_of_output(self, classifications, expected, output_of_hidden):
+        delta = np.subtract(np.array(expected ) , classifications )
+        self.derived_values_output = np.add(self.derived_values_output , np.dot( np.transpose(output_of_hidden), delta))
+        return delta
         
 
     def derivatives_of_hidden(self, output_of_hidden , output_of_reshape, delta):
         e5 = np.dot(delta , np.transpose(np.array(self.W0_weights)))
-        self.derived_values_hidden = self.derived_values_hidden +  np.dot (np.transpose(output_of_reshape), e5.clip(0) ) #delta5 = RELU(e5)
+        self.derived_values_hidden = np.add(self.derived_values_hidden ,  np.dot (np.transpose(output_of_reshape), e5.clip(0) ) )#delta5 = RELU(e5)
 
     
     def update_output_weights(self):
         # This updates the weights for the output layer
         self.derived_values_output =  np.true_divide(self.derived_values_output , 100)
-        self.W0_weights = self.W0_weights + self.derived_values_output * self.learning_rate
+        self.W0_weights = np.add(self.W0_weights , self.derived_values_output * self.learning_rate)
 
     
     def update_hidden_weights(self):
         # This updates the weights for the hidden layer
         self.derived_values_hidden =  np.true_divide(self.derived_values_hidden , 100)
-        self.W5_weights = self.W5_weights + self.derived_values_hidden * self.learning_rate
+        self.W5_weights = np.add(self.W5_weights , self.derived_values_hidden * self.learning_rate)
 
 
     def train(self):
@@ -195,6 +197,7 @@ class CNN:
 
         if (self.ran_one_epoch):
             self.find_csv_filtered_file()
+            self.ran_one_epoch = False
 
         i = 0
         if (not self.found_file):
@@ -235,15 +238,19 @@ class CNN:
                     i+=1
                     ratio = correct_count/100
                     print ("Batch",i,"with ratio: ",ratio )
-                    print("\nIt has processed 100 images\nThere are %i left" % (len(self.filtered_data) - image_count))
+                    # print("\nIt has processed 100 images\nThere are %i left" % (len(self.filtered_data) - image_count))
                     if (ratio > self.best_ratio):
                         self.best_ratio = ratio
+                    if (ratio > self.epoch_best_ratio ):
+                        self.epoch_best_ratio = ratio
 
                     correct_count = 0
             np.savetxt('filtereddata.csv' , self.filteredTrain, delimiter=',', newline='\n',fmt='%g')
             self.ran_one_epoch = True
         else:
             print("Beginning training from data from filtereddata.csv")
+            np.random.shuffle(self.filtered_data)
+
             for image in self.filtered_data:
                 image_count += 1
                 data = image[1:]
@@ -262,7 +269,6 @@ class CNN:
                 expected = [0] * 10
                 expected[int(image[0])] = 1
 
-                classification = classification.tolist()
                 self.back_propagation(classification, expected, Second_RELU_output, Reshape_result, image_count) 
 
                 if (np.argmax(classification) == image[0]):
@@ -271,7 +277,10 @@ class CNN:
                     i+=1
                     ratio = correct_count/100
                     print ("Batch",i,"with ratio: ",ratio )
-                    print("\nIt has processed 100 images\nThere are %i left" % (len(self.filtered_data) - image_count))
+                    # print("\nIt has processed 100 images\nThere are %i left" % (len(self.filtered_data) - image_count))
+                    if (ratio > self.epoch_best_ratio ):
+                        self.epoch_best_ratio = ratio
+
                     if (ratio > self.best_ratio):
                         self.best_ratio = ratio
 
@@ -305,7 +314,6 @@ class CNN:
         classification = self.soft_max(Output_layer_output)
 
 
-        # print ( np.argmax(classification) ,"::::::",image[0])
         if (np.argmax(classification) == image[0]):
             print( "The image was classified correctly. It was",image[0] )
         else:
@@ -314,11 +322,12 @@ class CNN:
         
 
 
-    def epochs(self):
-              
+    def epochs(self):              
         N = input("How many epochs should be run (must be a number): ")
         for x in range(int(N)):
             self.train() 
+            print ("EPOCH",x+1,"with best success ratio: ", self.epoch_best_ratio)
+            self.epoch_best_ratio = 0
         self.final_results()
       
         while(True):
